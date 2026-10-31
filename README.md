@@ -1,1 +1,0 @@
-# Love-tnpsc-yt-quiz
