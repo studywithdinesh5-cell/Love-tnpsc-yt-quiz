@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>LOVE TNPSC - Studio Quiz</title>
+  <title>LOVE TNPSC - Compact Studio Quiz</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link href="https://fonts.googleapis.com/css2?family=Mukta+Malar:wght@600;700;800&family=Teko:wght@700&display=swap" rel="stylesheet">
@@ -33,11 +33,11 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 8px 16px;
+      padding: 8px 18px;
       position: relative;
     }
 
-    /* Top Navigation Bar */
+    /* Top Bar */
     .header-bar {
       display: flex;
       justify-content: space-between;
@@ -46,6 +46,7 @@
       border-bottom: 1.5px solid #e2e8f0;
       gap: 8px;
       flex-shrink: 0;
+      z-index: 10;
     }
 
     .brand-tag {
@@ -56,7 +57,6 @@
       white-space: nowrap;
     }
 
-    /* கேள்வி எண் தேர்வு செய்யும் பட்டன் */
     .grid-trigger-btn {
       background: #f1f5f9;
       color: #0f172a;
@@ -87,6 +87,28 @@
       background: #e2e8f0;
     }
 
+    /* பென்சில் பட்டன் */
+    .pen-toggle-btn {
+      background: #f8fafc;
+      color: #0f172a;
+      border: 1.5px solid #cbd5e1;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+    .pen-toggle-btn.active {
+      background: #ef4444 !important;
+      color: #ffffff !important;
+      border-color: #dc2626 !important;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+    }
+
     .start-btn-top {
       background: linear-gradient(135deg, #1e3a8a, #0f172a);
       color: #ffffff;
@@ -114,7 +136,7 @@
       cursor: pointer;
     }
 
-    /* Question Title */
+    /* கேள்வி வரி - முன்பு இருந்த அதே கச்சிதமான அளவு */
     .question-title {
       font-size: 21px;
       font-weight: 800;
@@ -123,9 +145,10 @@
       margin: 4px 0;
       flex-shrink: 0;
       cursor: pointer;
+      z-index: 5;
     }
 
-    /* Middle Area */
+    /* நடுப்பகுதி: இடது பக்கம் ஆப்ஷன்கள், வலது பக்கம் எழுதுவதற்கான காலி இடம் */
     .body-content {
       display: flex;
       flex: 1;
@@ -137,13 +160,15 @@
       position: relative;
     }
 
-    /* Options */
+    /* 4 ஆப்ஷன்கள் - முன்பு இருந்த அளவு */
     .options-group {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      flex: 1.2;
+      gap: 7px;
+      flex: 1;
+      max-width: 52%;
       justify-content: center;
+      z-index: 5;
     }
 
     .opt-box {
@@ -155,6 +180,7 @@
       color: #000000;
       padding: 5px 12px;
       border-radius: 6px;
+      background: #ffffff;
       transition: all 0.2s ease;
     }
 
@@ -193,37 +219,14 @@
       100% { transform: scale(1); }
     }
 
-    /* Right Side Black Silhouette Container */
-    .right-column {
+    /* வலதுபுற காலி இடம் (படம் நீக்கப்பட்டு தாராளமாக எழுத ஒதுக்கப்பட்ட இடம்) */
+    .free-writing-space {
       flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      height: 100%;
       position: relative;
-      height: 100%;
-      max-height: 220px;
     }
 
-    .vector-art-box {
-      width: 100%;
-      max-width: 260px;
-      height: 190px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #f8fafc;
-      border: 2px dashed #cbd5e1;
-      border-radius: 12px;
-      padding: 10px;
-    }
-
-    .vector-art-box svg {
-      width: 100%;
-      height: 100%;
-      fill: #0f172a;
-    }
-
-    /* Golden 5s Timer */
+    /* தங்க நிற வட்ட டைமர் (வலது கீழ் மூலையில்) */
     .gold-timer {
       position: absolute;
       bottom: -4px;
@@ -237,6 +240,7 @@
       justify-content: center;
       box-shadow: 0 3px 10px rgba(161, 98, 7, 0.4);
       border: 2px solid #fef9c3;
+      z-index: 10;
     }
 
     .timer-num {
@@ -248,12 +252,75 @@
       text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
 
-    /* கடைசி கேள்விக்கான கமெண்ட் பேனர் */
+    /* முழுத்திரை வரைபலகை (Drawing Layer) */
+    #drawingCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 15;
+      pointer-events: none;
+      touch-action: none;
+    }
+    #drawingCanvas.pen-active {
+      pointer-events: auto;
+      cursor: crosshair;
+    }
+
+    /* பென்சில் டூல்பார் */
+    .pen-palette {
+      display: none;
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      padding: 5px 14px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+      z-index: 25;
+      animation: slideUp 0.2s ease-out;
+    }
+
+    @keyframes slideUp {
+      0% { transform: translate(-50%, 15px); opacity: 0; }
+      100% { transform: translate(-50%, 0); opacity: 1; }
+    }
+
+    .color-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid #ffffff;
+      transition: transform 0.15s ease;
+    }
+    .color-dot.selected {
+      transform: scale(1.25);
+      border-color: #facc15;
+    }
+
+    .pen-action-btn {
+      background: rgba(255,255,255,0.2);
+      color: #ffffff;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    /* கடைசி கேள்வி கமெண்ட் பேனர் */
     .comment-banner {
       display: none;
       position: absolute;
       inset: 0;
-      background: rgba(15, 23, 42, 0.92);
+      background: rgba(15, 23, 42, 0.94);
       backdrop-filter: blur(4px);
       border-radius: 14px;
       align-items: center;
@@ -261,7 +328,7 @@
       flex-direction: column;
       gap: 12px;
       z-index: 20;
-      animation: popComment 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      animation: popComment 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
       padding: 16px;
       text-align: center;
     }
@@ -275,7 +342,6 @@
       font-size: 24px;
       font-weight: 800;
       color: #facc15;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.4);
     }
 
     .comment-text-sub {
@@ -284,7 +350,7 @@
       color: #ffffff;
     }
 
-    /* வினா எண் கட்டத் திரை (Question Grid Modal) */
+    /* வினா எண் கட்டங்கள் விண்டோ */
     .grid-modal {
       display: none;
       position: fixed;
@@ -368,22 +434,26 @@
 
   <div class="main-wrapper">
 
-    <!-- Top Navigation Bar -->
+    <!-- Header Bar -->
     <div class="header-bar">
       <div style="display: flex; align-items: center; gap: 6px;">
         <span class="brand-tag">LOVE TNPSC</span>
-        <!-- நேரடியாக கேள்வி எண் தேர்வு செய்யும் பட்டன் -->
         <button id="gridBtn" class="grid-trigger-btn" onclick="openGridModal()">
           <span>🔢 வினா</span>
-          <span id="qBadgeNum" class="text-indigo-900 font-black">01/52</span>
+          <span id="qBadgeNum" class="text-indigo-900 font-black">01/50</span>
           <span>▼</span>
         </button>
       </div>
 
-      <!-- முன்னாடி / பின்னாடி செல்லும் பட்டன்கள் -->
-      <div style="display: flex; align-items: center; gap: 4px;">
+      <div style="display: flex; align-items: center; gap: 5px;">
         <button class="nav-btn" onclick="prevQuestion()" title="முந்தைய கேள்வி">◀ பின்</button>
         <button class="nav-btn" onclick="nextQuestion()" title="அடுத்த கேள்வி">முன் ▶</button>
+        
+        <!-- பென்சில் பட்டன் -->
+        <button id="penToggleBtn" class="pen-toggle-btn" onclick="togglePenMode()">
+          <span>✏️</span>
+          <span id="penBtnText">எழுது</span>
+        </button>
       </div>
       
       <button id="startBtn" class="start-btn-top" onclick="startTimer()">
@@ -393,12 +463,13 @@
       <button class="btn-edit" onclick="openEditor()">➕ கேள்விகள்</button>
     </div>
 
-    <!-- Question Line (இதைத் தொட்டாலும் கட்டத் திரை திறக்கும்) -->
-    <h1 id="qText" class="question-title" onclick="openGridModal()" title="கேள்வி எண் மாற்ற இங்கே கிளிக் செய்யவும்"></h1>
+    <!-- Question Line -->
+    <h1 id="qText" class="question-title" onclick="openGridModal()" title="வினா எண் மாற்ற கிளிக் செய்யவும்"></h1>
 
-    <!-- Options and Visuals -->
+    <!-- Body: Left Options + Right Blank Writing Area -->
     <div class="body-content">
       
+      <!-- Left Options -->
       <div class="options-group">
         <div id="optRow0" class="opt-box">
           <span class="opt-char">a)</span>
@@ -422,14 +493,14 @@
         </div>
       </div>
 
-      <div class="right-column">
-        <div id="vectorArtContainer" class="vector-art-box"></div>
+      <!-- Right Blank Writing Area -->
+      <div class="free-writing-space">
         <div class="gold-timer">
           <span id="timerVal" class="timer-num">5</span>
         </div>
       </div>
 
-      <!-- கடைசி கேள்விக்கு மட்டும் தோன்றும் கமெண்ட் பேனர் -->
+      <!-- Comment Banner for Last Question -->
       <div id="commentBanner" class="comment-banner">
         <div style="font-size: 38px;">💬</div>
         <div class="comment-text-main">இதற்கான சரியான விடை என்ன?</div>
@@ -438,9 +509,23 @@
 
     </div>
 
+    <!-- Full Screen Touch Drawing Canvas -->
+    <canvas id="drawingCanvas"></canvas>
+
+    <!-- Floating Pen Toolbar -->
+    <div id="penPalette" class="pen-palette" style="display: none;">
+      <div class="color-dot selected" style="background: #ef4444;" onclick="setPenColor('#ef4444', this)" title="சிவப்பு"></div>
+      <div class="color-dot" style="background: #eab308;" onclick="setPenColor('#eab308', this)" title="மஞ்சள்"></div>
+      <div class="color-dot" style="background: #10b981;" onclick="setPenColor('#10b981', this)" title="பச்சை"></div>
+      <div class="color-dot" style="background: #2563eb;" onclick="setPenColor('#2563eb', this)" title="நீலம்"></div>
+      
+      <button class="pen-action-btn" onclick="clearCanvas()">🗑️ அழி</button>
+      <button class="pen-action-btn" style="background: #ef4444;" onclick="togglePenMode()">✕ மூடு</button>
+    </div>
+
   </div>
 
-  <!-- வினா எண் கட்டங்கள் பாப்-அப் விண்டோ -->
+  <!-- Grid Modal -->
   <div id="gridModal" class="grid-modal" onclick="closeGridModal(event)">
     <div class="grid-content" onclick="event.stopPropagation()">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">
@@ -464,78 +549,12 @@
   </div>
 
   <script>
-    const VECTOR_ICONS = {
-      war: `<svg viewBox="0 0 200 160"><path d="M20,135 Q50,110 80,135 L90,135 L85,115 L105,95 L120,110 L115,135 L180,135 L170,120 L160,125 L150,105 L165,85 L145,75 L135,90 L125,80 L140,50 L120,45 L105,70 L95,65 L110,40 L90,35 L75,60 L60,55 L75,30 L55,25 L40,50 L20,135 Z M10,140 L190,140 L190,148 L10,148 Z M45,70 L65,50 M140,70 L120,50 M85,30 L95,15 L105,30 Z M50,110 L25,95 M150,110 L175,95"/></svg>`,
-      gun: `<svg viewBox="0 0 200 160"><path d="M15,82 L80,78 L95,70 L175,68 L185,74 L145,82 L105,84 L95,98 L80,102 L75,90 L45,92 L20,105 L15,82 Z M100,85 L110,95 L118,92 L112,85 Z M170,62 L185,62 L185,66 L170,66 Z"/></svg>`,
-      soldier: `<svg viewBox="0 0 200 160"><circle cx="100" cy="38" r="18"/><path d="M80,62 C70,65 60,78 60,95 L65,145 L85,145 L85,110 L115,110 L115,145 L135,145 L140,95 C140,78 130,65 120,62 Z M82,24 L118,24 L112,14 L88,14 Z M52,85 L42,125 L54,128 L62,95 Z M148,85 L158,125 L146,128 L138,95 Z"/></svg>`,
-      queen: `<svg viewBox="0 0 200 160"><circle cx="100" cy="35" r="16"/><path d="M85,18 L100,5 L115,18 L108,22 L92,22 Z M75,56 C65,65 62,80 62,100 L55,145 L145,145 L138,100 C138,80 135,65 125,56 Z M142,65 L175,25 L182,32 L150,75 Z M58,65 L45,95 L55,98 L65,72 Z"/></svg>`,
-      king: `<svg viewBox="0 0 200 160"><path d="M40,140 L160,140 L155,90 L165,90 L165,70 L150,70 L150,50 L135,50 L135,70 L115,70 L115,40 L85,40 L85,70 L65,70 L65,50 L50,50 L50,70 L35,70 L35,90 L45,90 Z M90,95 L110,95 L110,125 L90,125 Z M60,95 L75,95 L75,115 L60,115 Z M125,95 L140,95 L140,115 L125,115 Z"/></svg>`,
-      law: `<svg viewBox="0 0 200 160"><path d="M55,20 L135,20 C145,20 150,25 150,35 L150,130 C150,140 145,145 135,145 L55,145 C45,145 40,140 40,130 L40,35 C40,25 45,20 55,20 Z M60,45 L130,45 L130,52 L60,52 Z M60,65 L130,65 L130,72 L60,72 Z M60,85 L130,85 L130,92 L60,92 Z M60,105 L110,105 L110,112 L60,112 Z M120,115 A12,12 0 1,0 144,115 A12,12 0 1,0 120,115 Z"/></svg>`
-    };
-
-    function getSilhouetteForQuestion(text) {
-      const q = text.toLowerCase();
-      if (q.includes("துப்பாக்கி") || q.includes("தோட்டா") || q.includes("என்பீல்டு")) return VECTOR_ICONS.gun;
-      if (q.includes("லட்சுமி பாய்") || q.includes("ராணி") || q.includes("பேகம்") || q.includes("மங்கை")) return VECTOR_ICONS.queen;
-      if (q.includes("போர்") || q.includes("கலகம்") || q.includes("மீரட்") || q.includes("வந்தவாசி") || q.includes("புரட்சி")) return VECTOR_ICONS.war;
-      if (q.includes("பகதூர் ஷா") || q.includes("பேரரசர்") || q.includes("நவாப்") || q.includes("அரசர்")) return VECTOR_ICONS.king;
-      if (q.includes("உடன்படிக்கை") || q.includes("சட்டம்") || q.includes("கொள்கை") || q.includes("அறிக்கை")) return VECTOR_ICONS.law;
-      return VECTOR_ICONS.soldier;
-    }
-
     let defaultQuizData = [
-      {"question": "Q) முதலாம் கர்நாடகப் போர் நடைபெற்ற காலகட்டம் எது?", "options": ["1740 - 1748", "1746 - 1748", "1748 - 1754", "1756 - 1763"], "correct": 1},
-      {"question": "Q) முதலாம் கர்நாடகப் போருக்கு உடனடிக் காரணமாக அமைந்த ஐரோப்பியப் போர் எது?", "options": ["ஆஸ்திரிய வாரிசுரிமைப் போர்", "ஏழாண்டுப் போர்", "ஸ்பெயின் வாரிசுரிமைப் போர்", "ரோமானியப் போர்"], "correct": 0},
-      {"question": "Q) முதலாம் கர்நாடகப் போரின் போது பிரெஞ்சு பாண்டிச்சேரி ஆளுநராக இருந்தவர் யார்?", "options": ["கவுண்ட்-டி-லாலி", "ராபர்ட் கிளைவ்", "டியூப்ளே", "லா போர்டோனைஸ்"], "correct": 2},
-      {"question": "Q) சாந்தோம் போர் (அடையாறு போர்) நடைபெற்ற ஆண்டு எது?", "options": ["1748", "1750", "1744", "1746"], "correct": 3},
-      {"question": "Q) அடையாறு போரில் அன்வாருதீனின் படையை வழிநடத்திய அவரது மகன் யார்?", "options": ["முகமது அலி", "சந்தா சாகிப்", "முசாபர் ஜங்", "மாபூஸ்கான்"], "correct": 3},
-      {"question": "Q) அடையாறு போரில் மாபூஸ்கானைத் தோற்கடித்த பிரெஞ்சுப் படைத்தளபதி யார்?", "options": ["கேப்டன் பாரடைஸ்", "லாலி", "புஸ்ஸி", "பெயர்"], "correct": 0},
-      {"question": "Q) முதலாம் கர்நாடகப் போரை முடிவுக்குக் கொண்டுவந்த உடன்படிக்கை எது?", "options": ["பாண்டிச்சேரி உடன்படிக்கை", "ஐக்ஸ்-லா-சாப்பல் உடன்படிக்கை", "பாரிஸ் உடன்படிக்கை", "மதராஸ் உடன்படிக்கை"], "correct": 1},
-      {"question": "Q) ஐக்ஸ்-லா-சாப்பல் உடன்படிக்கை கையெழுத்தான ஆண்டு எது?", "options": ["1746", "1754", "1748", "1763"], "correct": 2},
-      {"question": "Q) ஐக்ஸ்-லா-சாப்பல் உடன்படிக்கையின்படி ஆங்கிலேயருக்கு மீண்டும் வழங்கப்பட்ட பகுதி எது?", "options": ["மதராஸ் (சென்னை)", "பாண்டிச்சேரி", "காரைக்கால்", "கொல்கத்தா"], "correct": 0},
-      {"question": "Q) இரண்டாம் கர்நாடகப் போர் நடைபெற்ற ஆண்டுகள் எவை?", "options": ["1746 - 1748", "1756 - 1763", "1749 - 1754", "1750 - 1756"], "correct": 2},
-      {"question": "Q) இரண்டாம் கர்நாடகப் போருக்கு முக்கியக் காரணமாக அமைந்தது எது?", "options": ["ஐரோப்பிய ஏழாண்டுப் போர்", "கர்நாடகம் மற்றும் ஹைதராபாத் வாரிசுரிமைப் போட்டி", "வங்காள நவாப் பிரச்சினை", "மராத்தியர் படையெடுப்பு"], "correct": 1},
-      {"question": "Q) ஹைதராபாத் நிஜாம் ஆசப் ஜா மறைந்த ஆண்டு எது?", "options": ["1748", "1746", "1750", "1752"], "correct": 0},
-      {"question": "Q) ஹைதராபாத் அரியணைக்காக போட்டியிட்டவர்கள் யார்?", "options": ["அன்வாருதீன் மற்றும் சந்தா சாகிப்", "நாசிர் ஜங் மற்றும் முசாபர் ஜங்", "முகமது அலி மற்றும் நாசிர் ஜங்", "அன்வாருதீன் மற்றும் முசாபர் ஜங்"], "correct": 1},
-      {"question": "Q) கர்நாடக நவாப் பதவிக்குப் போட்டியிட்டவர்கள் யார்?", "options": ["நாசிர் ஜங் மற்றும் சந்தா சாகிப்", "முசாபர் ஜங் மற்றும் முகமது அலி", "அன்வாருதீன் மற்றும் சந்தா சாகிப்", "சந்தா சாகிப் மற்றும் நாசிர் ஜங்"], "correct": 2},
-      {"question": "Q) இரண்டாம் கர்நாடகப் போரில் பிரெஞ்சுக்காரர்கள் ஆதரித்த நபர்கள் யார்?", "options": ["நாசிர் ஜங் & அன்வாருதீன்", "முகமது அலி & நாசிர் ஜங்", "முசாபர் ஜங் & முகமது அலி", "முசாபர் ஜங் & சந்தா சாகிப்"], "correct": 3},
-      {"question": "Q) இரண்டாம் கர்நாடகப் போரில் ஆங்கிலேயர்கள் ஆதரித்தவர்கள் யார்?", "options": ["நாசிர் ஜங் & அன்வாருதீன்", "சந்தா சாகிப் & முசாபர் ஜங்", "சந்தா சாகிப் & நாசிர் ஜங்", "முகமது அலி & முசாபர் ஜங்"], "correct": 0},
-      {"question": "Q) ஆம்பூர் போர் நடைபெற்ற ஆண்டு மற்றும் நாள் எது?", "options": ["1750 ஆகஸ்ட் 15", "1749 ஆகஸ்ட் 3", "1748 ஜூலை 12", "1751 செப்டம்பர் 5"], "correct": 1},
-      {"question": "Q) ஆம்பூர் போரில் கொல்லப்பட்ட கர்நாடக நவாப் யார்?", "options": ["சந்தா சாகிப்", "முகமது அலி", "அன்வாருதீன்", "சாப்டர் அலி"], "correct": 2},
-      {"question": "Q) ஆம்பூர் போருக்குப் பின் அன்வாருதீனின் மகன் முகமது அலி எங்கு தப்பி ஓடி தஞ்சம் அடைந்தார்?", "options": ["மதராஸ்", "செஞ்சி", "வேலூர்", "திருச்சிராப்பள்ளி"], "correct": 3},
-      {"question": "Q) ஆம்பூர் வெற்றிக்குப் பின் பிரெஞ்சுக்காரர்களால் கர்நாடக நவாப்பாக நியமிக்கப்பட்டவர் யார்?", "options": ["சந்தா சாகிப்", "முகமது அலி", "நாசிர் ஜங்", "மீர் ஜாபர்"], "correct": 0},
-      {"question": "Q) உதவிகளுக்குப் பரிசாக பிரெஞ்சுக்காரர்களுக்கு பாண்டிச்சேரியைச் சுற்றிலும் 80 கிராமங்களை வழங்கியவர் யார்?", "options": ["அன்வாருதீன்", "சந்தா சாகிப்", "நாசிர் ஜங்", "முகமது அலி"], "correct": 1},
-      {"question": "Q) பிரெஞ்சு தளபதி புஸ்ஸியின் பாதுகாப்பில் ஹைதராபாத்தின் புதிய நிஜாமாக நியமிக்கப்பட்டவர் யார்?", "options": ["நாசிர் ஜங்", "சலபத் ஜங்", "முசாபர் ஜங்", "மீர் நிஜாம் அலி"], "correct": 1},
-      {"question": "Q) சலபத் ஜங் பிரெஞ்சுக்காரர்களுக்கு வழங்கிய ஆந்திர கடலோரப் பகுதிகள் எவ்வாறு அழைக்கப்படுகின்றன?", "options": ["வடக்கு சர்க்கார்கள்", "ராயலசீமா", "கொங்கணம்", "மலபார்"], "correct": 0},
-      {"question": "Q) திருச்சிராப்பள்ளி முற்றுகையைத் திசைதிருப்ப ஆற்காட்டைத் தாக்கத் திட்டமிட்டவர் யார்?", "options": ["ஸ்ட்ரிங்கர் லாரன்ஸ்", "ராபர்ட் கிளைவ்", "சாண்டர்ஸ்", "கானிங் பிரபு"], "correct": 1},
-      {"question": "Q) ஆற்காட்டுப் போர் நடைபெற்ற ஆண்டு எது?", "options": ["1749", "1750", "1751", "1753"], "correct": 2},
-      {"question": "Q) 'ஆற்காட்டு வீரர்' (Hero of Arcot) என்று அழைக்கப்பட்டவர் யார்?", "options": ["டியூப்ளே", "ஸ்ட்ரிங்கர் லாரன்ஸ்", "சர் அயர்கூட்", "ராபர்ட் கிளைவ்"], "correct": 3},
-      {"question": "Q) ஆற்காட்டை 53 நாட்கள் வெற்றிகரமாகத் தற்காத்து மீட்ட ஆங்கிலேய தளபதி யார்?", "options": ["ராபர்ட் கிளைவ்", "ஜான் நிக்கல்சன்", "காலின் கேம்பல்", "ஹக் ரோஸ்"], "correct": 0},
-      {"question": "Q) சந்தா சாகிப் எங்கு வைத்து தஞ்சாவூர் தளபதியால் தலை துண்டிக்கப்பட்டுக் கொல்லப்பட்டார்?", "options": ["ஆற்காடு", "திருச்சிராப்பள்ளி", "பாண்டிச்சேரி", "வேலூர்"], "correct": 1},
-      {"question": "Q) இரண்டாம் கர்நாடகப் போரின் தோல்வியால் பிரான்ஸ் நாட்டிற்குத் திரும்ப அழைக்கப்பட்ட பிரெஞ்சு ஆளுநர் யார்?", "options": ["லா போர்டோனைஸ்", "புஸ்ஸி", "டியூப்ளே", "கவுண்ட்-டி-லாலி"], "correct": 2},
-      {"question": "Q) டியூப்ளேக்குப் பிறகு பாண்டிச்சேரியின் புதிய பிரெஞ்சு ஆளுநராக நியமிக்கப்பட்டவர் யார்?", "options": ["கவுண்ட்-டி-லாலி", "புஸ்ஸி", "லாரன்ஸ்", "கோதேஹியூ (Godeheu)"], "correct": 3},
-      {"question": "Q) இரண்டாம் கர்நாடகப் போரை முடிவுக்குக் கொண்டுவந்த உடன்படிக்கை எது?", "options": ["பாண்டிச்சேரி உடன்படிக்கை", "பாரிஸ் உடன்படிக்கை", "ஐக்ஸ்-லா-சாப்பல் உடன்படிக்கை", "மங்களுர் உடன்படிக்கை"], "correct": 0},
-      {"question": "Q) பாண்டிச்சேரி உடன்படிக்கை எந்த ஆண்டு கையெழுத்தானது?", "options": ["1748", "1754", "1756", "1763"], "correct": 1},
-      {"question": "Q) பாண்டிச்சேரி உடன்படிக்கையின்படி கர்நாடகாவின் புதிய நவாப்பாக ஆங்கிலேயரால் உறுதி செய்யப்பட்டவர் யார்?", "options": ["சந்தா சாகிப்", "முசாபர் ஜங்", "முகமது அலி", "சலபத் ஜங்"], "correct": 2},
-      {"question": "Q) மூன்றாம் கர்நாடகப் போர் நடைபெற்ற ஆண்டுகள் எவை?", "options": ["1756 - 1763", "1754 - 1760", "1748 - 1754", "1760 - 1765"], "correct": 0},
-      {"question": "Q) மூன்றாம் கர்நாடகப் போருக்குக் காரணமான ஐரோப்பியப் போர் எது?", "options": ["ஆஸ்திரிய வாரிசுரிமைப் போர்", "ஐரோப்பிய ஏழாண்டுப் போர்", "நூற்றாண்டுப் போர்", "முதலாம் உலகப் போர்"], "correct": 1},
-      {"question": "Q) மூன்றாம் கர்நாடகப் போரின் போது பிரெஞ்சுப் படைகளை வழிநடத்த அனுப்பப்பட்ட புதிய தளபதி யார்?", "options": ["டியூப்ளே", "கவுண்ட்-டி-லாலி", "கோதேஹியூ", "பெயர்"], "correct": 1},
-      {"question": "Q) கவுண்ட்-டி-லாலி எந்த ஆங்கிலேயக் கோட்டையைக் கைப்பற்றித் தனது படையெடுப்பைத் தொடங்கினார்?", "options": ["புனித டேவிட் கோட்டை (கடலூர்)", "புனித ஜார்ஜ் கோட்டை", "வில்லியம் கோட்டை", "செஞ்சிக் கோட்டை"], "correct": 0},
-      {"question": "Q) கவுண்ட்-டி-லாலி மதராஸைத் தாக்குவதற்காக ஹைதராபாத்திலிருந்து யாரை உதவிக்கு அழைத்தார்?", "options": ["டியூப்ளே", "புஸ்ஸி", "சலபத் ஜங்", "லா போர்டோனைஸ்"], "correct": 1},
-      {"question": "Q) புகழ்பெற்ற வந்தவாசிப் போர் (Battle of Wandiwash) நடைபெற்ற ஆண்டு எது?", "options": ["1757 ஜூன் 23", "1764 அக்டோபர் 22", "1760 ஜனவரி 22", "1761 ஜனவரி 14"], "correct": 2},
-      {"question": "Q) வந்தவாசிப் போரில் பிரெஞ்சுப் படைகளை வழிநடத்திய தளபதிகள் யார்?", "options": ["டியூப்ளே மற்றும் புஸ்ஸி", "கவுண்ட்-டி-லாலி மற்றும் கோதேஹியூ", "கவுண்ட்-டி-லாலி மற்றும் புஸ்ஸி", "லா போர்டோனைஸ் மற்றும் லாலி"], "correct": 2},
-      {"question": "Q) வந்தவாசிப் போரில் பிரெஞ்சுப் படைகளை முழுமையாகத் தோற்கடித்த ஆங்கிலேய ஜெனரல் யார்?", "options": ["ராபர்ட் கிளைவ்", "சர் அயர்கூட் (Sir Eyre Coote)", "ஹெக்டர் மன்றோ", "ஸ்ட்ரிங்கர் லாரன்ஸ்"], "correct": 1},
-      {"question": "Q) வந்தவாசிப் போருக்குப் பின் ஆங்கிலேயரிடம் போர்க் கைதியாகப் பிடிபட்ட முக்கிய பிரெஞ்சு தளபதி யார்?", "options": ["புஸ்ஸி", "லாலி", "கோதேஹியூ", "டியூப்ளே"], "correct": 0},
-      {"question": "Q) பாண்டிச்சேரி ஆங்கிலேயரிடம் எப்போது சரணடைந்தது?", "options": ["1760", "1761 ஜனவரி 16", "1763 பிப்ரவரி 10", "1759"], "correct": 1},
-      {"question": "Q) மூன்றாம் கர்நாடகப் போரை முடிவுக்குக் கொண்டுவந்த உடன்படிக்கை எது?", "options": ["ஐக்ஸ்-லா-சாப்பல் உடன்படிக்கை", "பாண்டிச்சேரி உடன்படிக்கை", "பாரிஸ் உடன்படிக்கை", "அலகாபாத் உடன்படிக்கை"], "correct": 2},
-      {"question": "Q) பாரிஸ் உடன்படிக்கை கையெழுத்தான ஆண்டு எது?", "options": ["1760", "1761", "1764", "1763"], "correct": 3},
-      {"question": "Q) பாரிஸ் உடன்படிக்கையின்படி பிரெஞ்சுக்காரர்களுக்கு விதிக்கப்பட்ட நிபந்தனை என்ன?", "options": ["குடியேற்றங்களை பலப்படுத்தவோ ராணுவத்தை வைத்திருக்கவோ கூடாது", "வர்த்தகம் செய்யவே தடை", "ஆங்கிலேயருக்கு கப்பம் கட்ட வேண்டும்", "அனைத்துப் பகுதிகளையும் முழுமையாக ஒப்படைக்க வேண்டும்"], "correct": 0},
-      {"question": "Q) இந்தியாவில் பிரெஞ்சு ஆதிக்கத்தின் அரசியல் கனவை நிரந்தரமாக முடிவுக்குக் கொண்டுவந்த போர் எது?", "options": ["அடையாறு போர்", "வந்தவாசிப் போர் (1760)", "ஆம்பூர் போர்", "பிளாசிப் போர்"], "correct": 1},
-      {"question": "Q) பிரான்ஸ் திரும்பிய கவுண்ட்-டி-லாலி எங்கு வைத்து தூக்கிலிடப்பட்டார்?", "options": ["லண்டன் டவர்", "பாஸ்டில் சிறை (பாரிஸ்)", "பாண்டிச்சேரி", "ரோம்"], "correct": 1},
-      {"question": "Q) 'இந்திய இராணுவத்தின் தந்தை' என்று அழைக்கப்படும் ஆங்கிலேய தளபதி யார்?", "options": ["ராபர்ட் கிளைவ்", "சர் அயர்கூட்", "மேஜர் ஸ்ட்ரிங்கர் லாரன்ஸ்", "வாரன் ஹேஸ்டிங்ஸ்"], "correct": 2},
-      {"question": "Q) கர்நாடகப் போர்களின் விளைவாக இந்தியாவில் ஆங்கிலேயரின் அதிகாரம் வலுவடைய முக்கியக் காரணம் என்ன?", "options": ["கடற்படை வலிமை மற்றும் நிதி மேன்மை", "இந்திய மக்களின் ஆதரவு", "மராத்தியரின் கூட்டணி", "பிரெஞ்சு மன்னரின் துரோகம்"], "correct": 0},
-      {"question": "Q) டியூப்ளேயின் அரசியல் ராஜதந்திரங்களுக்குப் பாலமாக இருந்த அவரது புகழ்பெற்ற தலைமைத் துவிபாஷி யார்?", "options": ["பச்சைப்ப முதலியார்", "ஆனந்தரங்கம் பிள்ளை", "ராமலிங்க அடிகளார்", "அழகப்ப செட்டியார்"], "correct": 1},
-      {"question": "Q) முதலாம், இரண்டாம் மற்றும் மூன்றாம் கர்நாடகப் போர்களை முடிவுக்குக் கொண்டுவந்த உடன்படிக்கைகளின் சரியான வரிசை எது?", "options": ["ஐக்ஸ்-லா-சாப்பல், பாண்டிச்சேரி, பாரிஸ்", "பாண்டிச்சேரி, ஐக்ஸ்-லா-சாப்பல், பாரிஸ்", "பாரிஸ், பாண்டிச்சேரி, ஐக்ஸ்-லா-சாப்பல்", "ஐக்ஸ்-லா-சாப்பல், பாரிஸ், பாண்டிச்சேரி"], "correct": 0}
+      {"question": "Q) 'ஆடு' - எவ்வகை தொழிற்பெயர்?", "options": ["விகுதி பெற்ற தொழிற்பெயர்", "முதboxநிலை தொழிற்பெயர்", "முதboxநிலை திரிந்த தொழிற்பெயர்", "எதிர்மறை தொழிற்பெயர்"], "correct": 1},
+      {"question": "Q) 'கேடு' - எவ்வகை தொழிற்பெயர்?", "options": ["முதboxநிலை திரிந்த தொழிற்பெயர்", "முதboxநிலை தொழிற்பெயர்", "விகுதி பெற்ற தொழிற்பெயர்", "தொழிலாகுபெயர்"], "correct": 0},
+      {"question": "Q) 'அஃறிணை' - பிரித்தெழுதுக:", "options": ["அல் + திணை", "அஃது + திணை", "அல் + இணை", "அஃகு + திணை"], "correct": 0},
+      {"question": "Q) 'பொருந்தாச் சொல் தேர்க' (சாரியையற்ற சொல்):", "options": ["மரத்தை", "புளியங்காய்", "வண்டொடு", "பாடினான்"], "correct": 3},
+      {"question": "Q) 'வஞ்சியடி' என்பது எத்தனை சீர்களைப் பெற்று வரும்?", "options": ["இரு சீர்", "முச்சீர்", "நாற்சீர்", "ஐஞ்சீர்"], "correct": 0}
     ];
 
     let quizData = JSON.parse(localStorage.getItem('quizData_saved')) || defaultQuizData;
@@ -599,13 +618,7 @@
       const q = quizData[currentIndex];
       document.getElementById('qBadgeNum').textContent = `${String(currentIndex + 1).padStart(2, '0')}/${String(quizData.length).padStart(2, '0')}`;
       document.getElementById('qText').textContent = q.question;
-      
-      const artContainer = document.getElementById('vectorArtContainer');
-      artContainer.innerHTML = getSilhouetteForQuestion(q.question);
-
       document.getElementById('timerVal').textContent = '5';
-
-      // கமெண்ட் பேனரை மறைத்தல்
       document.getElementById('commentBanner').style.display = 'none';
 
       const btn = document.getElementById('startBtn');
@@ -617,6 +630,8 @@
         document.getElementById(`optRow${i}`).className = 'opt-box';
         document.getElementById(`tick${i}`).innerHTML = '';
       }
+
+      clearCanvas();
     }
 
     function nextQuestion() {
@@ -664,24 +679,104 @@
       const q = quizData[currentIndex];
       const isLastQuestion = (currentIndex === quizData.length - 1);
 
-      // கடைசி கேள்வியாக இருந்தால் விடையைக் காட்டாமல் கமெண்ட் பேனரை மட்டும் காட்டு
       if (isLastQuestion) {
         document.getElementById('commentBanner').style.display = 'flex';
         document.getElementById('startBtn').textContent = 'கமெண்ட் பண்ணுங்க!';
         return;
       }
 
-      // மற்ற வினாக்களுக்கு வழக்கம்போல பச்சை ஹைலைட்
       const correctIdx = q.correct;
       const row = document.getElementById(`optRow${correctIdx}`);
       row.classList.add('is-correct');
       document.getElementById(`tick${correctIdx}`).innerHTML = '<span class="tick-badge">✔</span>';
-
       document.getElementById('startBtn').textContent = 'சரியான விடை!';
-      // ஆட்டோமேட்டிக் நெக்ஸ்ட் நீக்கப்பட்டுவிட்டது; நீங்கள் பட்டனைத் தட்டினால் மட்டுமே அடுத்த கேள்விக்குச் செல்லும்
     }
 
-    /* வினா எண் கட்டங்கள் மேலாண்மை */
+    /* Pen Engine */
+    const canvas = document.getElementById('drawingCanvas');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let penActive = false;
+    let penColor = '#ef4444';
+    let penSize = 3.5;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    function togglePenMode() {
+      penActive = !penActive;
+      const penBtn = document.getElementById('penToggleBtn');
+      const penText = document.getElementById('penBtnText');
+      const palette = document.getElementById('penPalette');
+
+      if (penActive) {
+        canvas.classList.add('pen-active');
+        penBtn.classList.add('active');
+        penText.textContent = 'எழுதுகிறது...';
+        palette.style.display = 'flex';
+      } else {
+        canvas.classList.remove('pen-active');
+        penBtn.classList.remove('active');
+        penText.textContent = 'எழுது';
+        palette.style.display = 'none';
+      }
+    }
+
+    function setPenColor(color, el) {
+      penColor = color;
+      document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function getPos(e) {
+      return {
+        x: e.clientX || (e.touches && e.touches[0].clientX),
+        y: e.clientY || (e.touches && e.touches[0].clientY)
+      };
+    }
+
+    function startDraw(e) {
+      if (!penActive) return;
+      isDrawing = true;
+      const pos = getPos(e);
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+      ctx.strokeStyle = penColor;
+      ctx.lineWidth = penSize;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+    }
+
+    function draw(e) {
+      if (!isDrawing || !penActive) return;
+      e.preventDefault();
+      const pos = getPos(e);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+    }
+
+    function stopDraw() {
+      if (!penActive) return;
+      isDrawing = false;
+      ctx.closePath();
+    }
+
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDraw);
+
+    canvas.addEventListener('touchstart', startDraw, { passive: false });
+    canvas.addEventListener('touchmove', draw, { passive: false });
+    canvas.addEventListener('touchend', stopDraw);
+
+    /* Grid Modal */
     function openGridModal() {
       const container = document.getElementById('tilesContainer');
       container.innerHTML = '';
@@ -728,6 +823,7 @@
     }
 
     window.onload = () => {
+      resizeCanvas();
       renderScreen();
       document.body.addEventListener('touchstart', getCtx, { once: true });
       document.body.addEventListener('click', getCtx, { once: true });
