@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>LOVE TNPSC - Natural Human Voice Quiz</title>
+  <title>LOVE TNPSC - Studio Quiz</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link href="https://fonts.googleapis.com/css2?family=Mukta+Malar:wght@600;700;800&family=Teko:wght@700&display=swap" rel="stylesheet">
@@ -369,9 +369,6 @@
 </head>
 <body>
 
-  <!-- iPhone Silent Mode-லிலும் சவுண்ட் கேட்கும் நிரந்தர HTML5 Audio Player -->
-  <audio id="voicePlayer" playsinline preload="auto"></audio>
-
   <div class="main-wrapper">
 
     <!-- Header Bar -->
@@ -498,9 +495,16 @@
     let countdown = 5;
     let timerHandle = null;
     let nextStepTimeout = null;
-    let watchdogTimer = null;
+    let speechQueue = [];
+    let isSpeakingNow = false;
 
-    const voicePlayer = document.getElementById('voicePlayer');
+    // Web Audio Unlock for iOS Safari
+    let audioCtx = null;
+    function getCtx() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
 
     function formatForSpeech(rawText) {
       return rawText
@@ -509,123 +513,67 @@
         .replace(/\s*-\s*/g, ', ')
         .replace(/\s*\/\s*/g, ' அல்லது ')
         .replace(/_{2,}/g, ' என்ன ')
-        .replace(/[:;]/g, '.')
         .trim();
     }
 
-    // நீளமான வாக்கியங்களைச் சிறிய துண்டுகளாகப் பிரித்தல் (Google Neural TTS வரம்பிற்கு ஏற்ப)
-    function splitTextIntoChunks(text) {
-      const cleaned = formatForSpeech(text);
-      const words = cleaned.split(/\s+/);
-      const chunks = [];
-      let current = "";
-
-      for (const word of words) {
-        if ((current + " " + word).trim().length <= 160) {
-          current = (current + " " + word).trim();
-        } else {
-          if (current) chunks.push(current);
-          current = word;
-        }
-      }
-      if (current) chunks.push(current);
-      return chunks;
-    }
-
     function stopAllSpeech() {
-      clearTimeout(watchdogTimer);
-      voicePlayer.pause();
-      voicePlayer.onended = null;
-      voicePlayer.onerror = null;
+      isSpeakingNow = false;
+      speechQueue = [];
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
     }
 
-    // API Key எதுவும் இல்லாமல் 100% இலவசமாக இயங்கும் Google Neural Tamil Voice
-    function speakHumanTamil(rawText, onComplete) {
-      stopAllSpeech();
-      const chunks = splitTextIntoChunks(rawText);
-      if (chunks.length === 0) {
-        if (onComplete) onComplete();
-        return;
-      }
-
-      let chunkIdx = 0;
-
-      function playNextChunk() {
-        if (!isAutoRunning) return;
-        if (chunkIdx >= chunks.length) {
-          if (onComplete) onComplete();
-          return;
-        }
-
-        const chunkText = chunks[chunkIdx];
-        const encoded = encodeURIComponent(chunkText);
-        // Google Translate Neural Tamil Female Voice (எந்த API Key-ம் இல்லாமல் 100% இலவசம் & லிமிட் இல்லாதது)
-        const ttsUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=gtx&tl=ta&q=${encoded}`;
-
-        let finished = false;
-        function finishChunk() {
-          if (finished) return;
-          finished = true;
-          clearTimeout(watchdogTimer);
-          chunkIdx++;
-          playNextChunk();
-        }
-
-        voicePlayer.src = ttsUrl;
-        voicePlayer.playbackRate = 0.96;
-
-        voicePlayer.onended = () => {
-          setTimeout(finishChunk, 150);
-        };
-
-        voicePlayer.onerror = () => {
-          // நெட்வொர்க் தடையிருந்தால் மட்டும் Backup Voice
-          fallbackNativeVoice(chunkText, finishChunk);
-        };
-
-        // பாதுகாப்பு Watchdog (சவுண்ட் பாதியில் நின்றால் அடுத்த கட்டத்திற்கு நகர்த்த)
-        const maxDuration = Math.max(2500, chunkText.length * 130);
-        watchdogTimer = setTimeout(finishChunk, maxDuration);
-
-        const playPromise = voicePlayer.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(() => {
-            fallbackNativeVoice(chunkText, finishChunk);
-          });
-        }
-      }
-
-      playNextChunk();
+    function getBestTamilVoice() {
+      if (!('speechSynthesis' in window)) return null;
+      const voices = window.speechSynthesis.getVoices();
+      return (
+        voices.find(v => v.lang && v.lang.toLowerCase().includes('ta') && /enhanced|premium|vani|lekha|valluvar|natural|google/i.test(v.name)) ||
+        voices.find(v => v.lang && v.lang.toLowerCase().includes('ta')) ||
+        voices[0]
+      );
     }
 
-    function fallbackNativeVoice(text, done) {
+    // நம்பகமான Native Speech Engine (எந்த தடையுமின்றி தொடர்ச்சியாகப் பேசும்)
+    function speakText(text, onDone) {
       if (!('speechSynthesis' in window)) {
-        setTimeout(done, 1200);
+        if (onDone) onDone();
         return;
       }
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      const voices = window.speechSynthesis.getVoices();
-      const taVoice = voices.find(v => v.lang && v.lang.includes('ta'));
-      if (taVoice) u.voice = taVoice;
-      u.lang = 'ta-IN';
-      u.rate = 0.92;
-      u.onend = () => done();
-      u.onerror = () => done();
-      window.speechSynthesis.speak(u);
+
+      const cleaned = formatForSpeech(text);
+      const utter = new SpeechSynthesisUtterance(cleaned);
+      const voice = getBestTamilVoice();
+      if (voice) utter.voice = voice;
+      utter.lang = 'ta-IN';
+      utter.rate = 0.90;   // நிதானமான தெளிவான வேகம்
+      utter.pitch = 1.02;  // இயல்பான சுருதி
+
+      let doneCalled = false;
+      function finish() {
+        if (doneCalled) return;
+        doneCalled = true;
+        if (onDone) onDone();
+      }
+
+      utter.onend = () => {
+        setTimeout(finish, 200);
+      };
+
+      utter.onerror = () => {
+        finish();
+      };
+
+      // Safari Safety Timeout
+      const safetyTime = Math.max(3000, cleaned.length * 150);
+      setTimeout(() => {
+        if (!doneCalled) finish();
+      }, safetyTime);
+
+      window.speechSynthesis.speak(utter);
     }
 
     /* Sound Effects */
-    let audioCtx = null;
-    function getCtx() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      return audioCtx;
-    }
-
     function playTick() {
       try {
         const ctx = getCtx();
@@ -698,6 +646,12 @@
 
     function toggleAutoQuiz() {
       getCtx();
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        // iOS Audio Unlock Dummy Utterance
+        window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+      }
+
       if (isAutoRunning) {
         stopAutoQuiz();
       } else {
@@ -730,10 +684,10 @@
       const q = quizData[currentIndex];
       updateStatusPill('🎙️ கேள்வி வாசிக்கிறது...', true);
 
-      // 1. கேள்வியை மட்டும் மனிதக் குரலில் வாசித்தல் (4 ஆப்ஷன்களை வாசிக்காது)
-      speakHumanTamil(q.question, () => {
+      // 1. கேள்வியை மட்டும் வாசித்தல்
+      speakText(q.question, () => {
         if (!isAutoRunning) return;
-        // 2. கேள்வி முடிந்ததும் 5 விநாடி டைமர் தொடங்குதல்
+        // 2. 5 விநாடி டைமர் தொடங்குதல்
         startAutomatic5SecTimer();
       });
     }
@@ -769,17 +723,15 @@
       const q = quizData[currentIndex];
       const isLastQuestion = (currentIndex === quizData.length - 1);
 
-      // கடைசி கேள்விக்கு பச்சை விடை காட்டாமல் கமெண்ட் பேனர் காட்டுதல்
       if (isLastQuestion) {
         document.getElementById('commentBanner').style.display = 'flex';
         updateStatusPill('💬 கமெண்ட் பண்ணுங்க!', true);
-        speakHumanTamil('இதற்கான சரியான விடை என்ன? உங்கள் பதிலை கீழே கமெண்ட் பண்ணுங்க!', () => {
+        speakText('இதற்கான சரியான விடை என்ன? உங்கள் பதிலை கீழே கமெண்ட் பண்ணுங்க!', () => {
           stopAutoQuiz();
         });
         return;
       }
 
-      // பச்சை நிறத்தில் விடையை ஹைலைட் + டிக் மார்க் செய்தல்
       const correctIdx = q.correct;
       const row = document.getElementById(`optRow${correctIdx}`);
       row.classList.add('is-correct');
@@ -788,8 +740,8 @@
       const correctAnswerText = q.options[correctIdx];
       updateStatusPill('✔ விடை வாசிக்கிறது...', true);
 
-      // 3. விடையை மட்டும் மனிதக் குரலில் வாசித்தல்
-      speakHumanTamil(`சரியான விடை, ${correctAnswerText}`, () => {
+      // 3. விடையை மட்டும் வாசித்தல்
+      speakText(`சரியான விடை, ${correctAnswerText}`, () => {
         if (!isAutoRunning) return;
         // 4. தானாக அடுத்த கேள்விக்குச் செல்லுதல்
         nextStepTimeout = setTimeout(() => {
@@ -954,6 +906,9 @@
     window.onload = () => {
       resizeCanvas();
       renderScreen();
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.getVoices();
+      }
       document.body.addEventListener('touchstart', getCtx, { once: true });
       document.body.addEventListener('click', getCtx, { once: true });
     };
