@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>LOVE TNPSC - Compact Studio Quiz</title>
+  <title>LOVE TNPSC - Natural Voice Studio Quiz</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link href="https://fonts.googleapis.com/css2?family=Mukta+Malar:wght@600;700;800&family=Teko:wght@700&display=swap" rel="stylesheet">
@@ -44,9 +44,10 @@
       align-items: center;
       padding-bottom: 5px;
       border-bottom: 1.5px solid #e2e8f0;
-      gap: 8px;
+      gap: 6px;
       flex-shrink: 0;
       z-index: 10;
+      flex-wrap: wrap;
     }
 
     .brand-tag {
@@ -87,12 +88,39 @@
       background: #e2e8f0;
     }
 
+    /* குரல் வாசிப்பு பட்டன் */
+    .voice-btn {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1.5px solid #93c5fd;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+    .voice-btn.speaking {
+      background: #2563eb !important;
+      color: #ffffff !important;
+      border-color: #1d4ed8 !important;
+      animation: pulseVoice 1.2s infinite;
+    }
+
+    @keyframes pulseVoice {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.5); }
+      50% { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0); }
+    }
+
     /* பென்சில் பட்டன் */
     .pen-toggle-btn {
       background: #f8fafc;
       color: #0f172a;
       border: 1.5px solid #cbd5e1;
-      padding: 4px 12px;
+      padding: 4px 10px;
       border-radius: 6px;
       font-size: 12px;
       font-weight: 800;
@@ -106,16 +134,15 @@
       background: #ef4444 !important;
       color: #ffffff !important;
       border-color: #dc2626 !important;
-      box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
     }
 
     .start-btn-top {
       background: linear-gradient(135deg, #1e3a8a, #0f172a);
       color: #ffffff;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 800;
       border: none;
-      padding: 6px 14px;
+      padding: 6px 12px;
       border-radius: 8px;
       cursor: pointer;
       box-shadow: 0 2px 6px rgba(0,0,0,0.15);
@@ -136,7 +163,7 @@
       cursor: pointer;
     }
 
-    /* கேள்வி வரி - முன்பு இருந்த அதே கச்சிதமான அளவு */
+    /* கேள்வி வரி */
     .question-title {
       font-size: 21px;
       font-weight: 800;
@@ -160,7 +187,6 @@
       position: relative;
     }
 
-    /* 4 ஆப்ஷன்கள் - முன்பு இருந்த அளவு */
     .options-group {
       display: flex;
       flex-direction: column;
@@ -219,14 +245,12 @@
       100% { transform: scale(1); }
     }
 
-    /* வலதுபுற காலி இடம் (படம் நீக்கப்பட்டு தாராளமாக எழுத ஒதுக்கப்பட்ட இடம்) */
     .free-writing-space {
       flex: 1;
       height: 100%;
       position: relative;
     }
 
-    /* தங்க நிற வட்ட டைமர் (வலது கீழ் மூலையில்) */
     .gold-timer {
       position: absolute;
       bottom: -4px;
@@ -252,7 +276,7 @@
       text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
 
-    /* முழுத்திரை வரைபலகை (Drawing Layer) */
+    /* Drawing Layer */
     #drawingCanvas {
       position: absolute;
       top: 0;
@@ -268,7 +292,7 @@
       cursor: crosshair;
     }
 
-    /* பென்சில் டூல்பார் */
+    /* Pen Toolbar */
     .pen-palette {
       display: none;
       position: absolute;
@@ -278,17 +302,10 @@
       background: #0f172a;
       padding: 5px 14px;
       border-radius: 30px;
-      display: flex;
       align-items: center;
       gap: 10px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.25);
       z-index: 25;
-      animation: slideUp 0.2s ease-out;
-    }
-
-    @keyframes slideUp {
-      0% { transform: translate(-50%, 15px); opacity: 0; }
-      100% { transform: translate(-50%, 0); opacity: 1; }
     }
 
     .color-dot {
@@ -297,7 +314,6 @@
       border-radius: 50%;
       cursor: pointer;
       border: 2px solid #ffffff;
-      transition: transform 0.15s ease;
     }
     .color-dot.selected {
       transform: scale(1.25);
@@ -315,7 +331,7 @@
       cursor: pointer;
     }
 
-    /* கடைசி கேள்வி கமெண்ட் பேனர் */
+    /* Comment Banner */
     .comment-banner {
       display: none;
       position: absolute;
@@ -328,14 +344,8 @@
       flex-direction: column;
       gap: 12px;
       z-index: 20;
-      animation: popComment 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
       padding: 16px;
       text-align: center;
-    }
-
-    @keyframes popComment {
-      0% { transform: scale(0.8); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
     }
 
     .comment-text-main {
@@ -350,7 +360,7 @@
       color: #ffffff;
     }
 
-    /* வினா எண் கட்டங்கள் விண்டோ */
+    /* Grid Modal */
     .grid-modal {
       display: none;
       position: fixed;
@@ -372,7 +382,6 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
     }
     .tiles-wrapper {
       display: grid;
@@ -391,7 +400,6 @@
       font-size: 14px;
       font-weight: 800;
       cursor: pointer;
-      text-align: center;
     }
     .tile-btn.current {
       background: #1e3a8a;
@@ -399,7 +407,7 @@
       border-color: #1e3a8a;
     }
 
-    /* அப்லோட் மாடல் */
+    /* Upload Modal */
     .modal-wrap {
       display: none;
       position: fixed;
@@ -449,6 +457,12 @@
         <button class="nav-btn" onclick="prevQuestion()" title="முந்தைய கேள்வி">◀ பின்</button>
         <button class="nav-btn" onclick="nextQuestion()" title="அடுத்த கேள்வி">முன் ▶</button>
         
+        <!-- இயல்பான தமிழ் குரல் வாசிப்பு பட்டன் -->
+        <button id="voiceReadBtn" class="voice-btn" onclick="toggleReadQuestion()">
+          <span>🔊</span>
+          <span id="voiceBtnText">வாசி</span>
+        </button>
+
         <!-- பென்சில் பட்டன் -->
         <button id="penToggleBtn" class="pen-toggle-btn" onclick="togglePenMode()">
           <span>✏️</span>
@@ -457,19 +471,17 @@
       </div>
       
       <button id="startBtn" class="start-btn-top" onclick="startTimer()">
-        ⏱️ தொடங்கு (5s)
+        ⏱️ டைமர் (5s)
       </button>
 
       <button class="btn-edit" onclick="openEditor()">➕ கேள்விகள்</button>
     </div>
 
     <!-- Question Line -->
-    <h1 id="qText" class="question-title" onclick="openGridModal()" title="வினா எண் மாற்ற கிளிக் செய்யவும்"></h1>
+    <h1 id="qText" class="question-title" onclick="openGridModal()"></h1>
 
-    <!-- Body: Left Options + Right Blank Writing Area -->
+    <!-- Body -->
     <div class="body-content">
-      
-      <!-- Left Options -->
       <div class="options-group">
         <div id="optRow0" class="opt-box">
           <span class="opt-char">a)</span>
@@ -493,32 +505,28 @@
         </div>
       </div>
 
-      <!-- Right Blank Writing Area -->
       <div class="free-writing-space">
         <div class="gold-timer">
           <span id="timerVal" class="timer-num">5</span>
         </div>
       </div>
 
-      <!-- Comment Banner for Last Question -->
       <div id="commentBanner" class="comment-banner">
         <div style="font-size: 38px;">💬</div>
         <div class="comment-text-main">இதற்கான சரியான விடை என்ன?</div>
         <div class="comment-text-sub">உங்க பதிலை உடனே கீழே Comment பண்ணுங்க! 👇</div>
       </div>
-
     </div>
 
-    <!-- Full Screen Touch Drawing Canvas -->
+    <!-- Drawing Canvas -->
     <canvas id="drawingCanvas"></canvas>
 
-    <!-- Floating Pen Toolbar -->
+    <!-- Pen Toolbar -->
     <div id="penPalette" class="pen-palette" style="display: none;">
-      <div class="color-dot selected" style="background: #ef4444;" onclick="setPenColor('#ef4444', this)" title="சிவப்பு"></div>
-      <div class="color-dot" style="background: #eab308;" onclick="setPenColor('#eab308', this)" title="மஞ்சள்"></div>
-      <div class="color-dot" style="background: #10b981;" onclick="setPenColor('#10b981', this)" title="பச்சை"></div>
-      <div class="color-dot" style="background: #2563eb;" onclick="setPenColor('#2563eb', this)" title="நீலம்"></div>
-      
+      <div class="color-dot selected" style="background: #ef4444;" onclick="setPenColor('#ef4444', this)"></div>
+      <div class="color-dot" style="background: #eab308;" onclick="setPenColor('#eab308', this)"></div>
+      <div class="color-dot" style="background: #10b981;" onclick="setPenColor('#10b981', this)"></div>
+      <div class="color-dot" style="background: #2563eb;" onclick="setPenColor('#2563eb', this)"></div>
       <button class="pen-action-btn" onclick="clearCanvas()">🗑️ அழி</button>
       <button class="pen-action-btn" style="background: #ef4444;" onclick="togglePenMode()">✕ மூடு</button>
     </div>
@@ -550,11 +558,9 @@
 
   <script>
     let defaultQuizData = [
-      {"question": "Q) 'ஆடு' - எவ்வகை தொழிற்பெயர்?", "options": ["விகுதி பெற்ற தொழிற்பெயர்", "முதboxநிலை தொழிற்பெயர்", "முதboxநிலை திரிந்த தொழிற்பெயர்", "எதிர்மறை தொழிற்பெயர்"], "correct": 1},
-      {"question": "Q) 'கேடு' - எவ்வகை தொழிற்பெயர்?", "options": ["முதboxநிலை திரிந்த தொழிற்பெயர்", "முதboxநிலை தொழிற்பெயர்", "விகுதி பெற்ற தொழிற்பெயர்", "தொழிலாகுபெயர்"], "correct": 0},
-      {"question": "Q) 'அஃறிணை' - பிரித்தெழுதுக:", "options": ["அல் + திணை", "அஃது + திணை", "அல் + இணை", "அஃகு + திணை"], "correct": 0},
-      {"question": "Q) 'பொருந்தாச் சொல் தேர்க' (சாரியையற்ற சொல்):", "options": ["மரத்தை", "புளியங்காய்", "வண்டொடு", "பாடினான்"], "correct": 3},
-      {"question": "Q) 'வஞ்சியடி' என்பது எத்தனை சீர்களைப் பெற்று வரும்?", "options": ["இரு சீர்", "முச்சீர்", "நாற்சீர்", "ஐஞ்சீர்"], "correct": 0}
+      {"question": "Q) 'அரை' - 'அறை' என்ற சொற்களின் சரியான பொருள் வேறுபாட்டைத் தேர்க:", "options": ["சமையலறை - ஆடை", "பாதி - அறைதல் / அறை", "ஒலித்தல் - பாதி", "உடை - சுத்தியல்"], "correct": 1},
+      {"question": "Q) 'இரை' - 'இறை' என்ற மயங்கொலிச் சொற்களின் முறையான பொருள் யாது?", "options": ["உணவு - கடவுள் / அரசன்", "சத்தம் - இறைத்தல்", "அரசன் - உணவு", "விதைத்தல் - இரைச்சல்"], "correct": 0},
+      {"question": "Q) 'கூரை' - 'கூறை' பொருள் வேறுபாட்டைக் கண்டறிக:", "options": ["புடவை - வீட்டின் உச்சி", "வெட்டுதல் - உடை", "வீட்டின் கூரை - புடவை", "கூர்மையானது - ஆடை"], "correct": 2}
     ];
 
     let quizData = JSON.parse(localStorage.getItem('quizData_saved')) || defaultQuizData;
@@ -565,6 +571,117 @@
     let countdown = 5;
     let timerHandle = null;
 
+    /* ===================================================================== */
+    /* இயல்பான மனிதக் குரல் வாசிப்பு (Natural Human-like Tamil Voice Engine) */
+    /* ===================================================================== */
+    let selectedTamilVoice = null;
+    let isSpeaking = false;
+
+    function loadBestTamilVoice() {
+      const voices = window.speechSynthesis.getVoices();
+      // iOS-ல் உள்ள மிகத் தெளிவான 'Vani' அல்லது 'Lekha' அல்லது 'ta-IN' குரலைத் தேர்ந்தெடுத்தல்
+      selectedTamilVoice = 
+        voices.find(v => v.lang.includes('ta') && (v.name.includes('Vani') || v.name.includes('Enhanced') || v.name.includes('Premium') || v.name.includes('Valluvar'))) ||
+        voices.find(v => v.lang === 'ta-IN') ||
+        voices.find(v => v.lang.startsWith('ta'));
+    }
+
+    if ('speechSynthesis' in window) {
+      loadBestTamilVoice();
+      window.speechSynthesis.onvoiceschanged = loadBestTamilVoice;
+    }
+
+    function stopSpeech() {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      isSpeaking = false;
+      const btn = document.getElementById('voiceReadBtn');
+      const txt = document.getElementById('voiceBtnText');
+      if (btn) btn.classList.remove('speaking');
+      if (txt) txt.textContent = 'வாசி';
+    }
+
+    // வாக்கியங்களை இயல்பான இடைவெளியுடன் (Natural Pauses) சுத்தப்படுத்தி வாசித்தல்
+    function cleanTextForHumanSpeech(text) {
+      return text
+        .replace(/^Q\)\s*/i, '') // 'Q)' என்பதை வாசிக்காமல் தவிர்த்தல்
+        .replace(/-/g, ', ')     // '-' வரும் இடத்தில் சிறிய மூச்சு இடைவெளி
+        .replace(/\//g, ' அல்லது ') // '/' வரும் இடத்தில் 'அல்லது' என இயல்பாக வாசித்தல்
+        .replace(/_/g, ' என்ன ');
+    }
+
+    function speakNaturalTamil(sentencesArray, onCompleteCallback) {
+      if (!('speechSynthesis' in window)) return;
+      stopSpeech();
+      loadBestTamilVoice();
+
+      isSpeaking = true;
+      const btn = document.getElementById('voiceReadBtn');
+      const txt = document.getElementById('voiceBtnText');
+      btn.classList.add('speaking');
+      txt.textContent = 'நிறுத்து';
+
+      let idx = 0;
+      function speakNextChunk() {
+        if (!isSpeaking || idx >= sentencesArray.length) {
+          stopSpeech();
+          if (onCompleteCallback) onCompleteCallback();
+          return;
+        }
+
+        const utter = new SpeechSynthesisUtterance(sentencesArray[idx]);
+        if (selectedTamilVoice) {
+          utter.voice = selectedTamilVoice;
+        }
+        utter.lang = 'ta-IN';
+        // ரோபோட்டிக் தன்மையை நீக்க இயல்பான வேகம் & சுருதி
+        utter.rate = 0.93;  
+        utter.pitch = 1.02; 
+
+        utter.onend = () => {
+          idx++;
+          // ஒவ்வொரு வரிக்கும் இடையே மனிதர் மூச்சு விடுவது போன்ற 300ms இடைவெளி
+          setTimeout(speakNextChunk, 300);
+        };
+
+        utter.onerror = () => {
+          stopSpeech();
+        };
+
+        window.speechSynthesis.speak(utter);
+      }
+
+      speakNextChunk();
+    }
+
+    // "🔊 வாசி" பட்டனை அழுத்தும்போது கேள்வி + 4 ஆப்ஷன்களை வாசித்தல்
+    function toggleReadQuestion() {
+      if (isSpeaking) {
+        stopSpeech();
+        return;
+      }
+
+      const q = quizData[currentIndex];
+      const qClean = cleanTextForHumanSpeech(q.question);
+      const chunks = [
+        qClean,
+        `ஆப்ஷன் ஏ, ${cleanTextForHumanSpeech(q.options[0])}`,
+        `ஆப்ஷன் பி, ${cleanTextForHumanSpeech(q.options[1])}`,
+        `ஆப்ஷன் சி, ${cleanTextForHumanSpeech(q.options[2])}`,
+        `ஆப்ஷன் டி, ${cleanTextForHumanSpeech(q.options[3])}`
+      ];
+
+      speakNaturalTamil(chunks);
+    }
+
+    // விடை வெளியிடப்படும்போது சரியான விடையை மட்டும் வாசித்தல்
+    function speakCorrectAnswer(ansText) {
+      const cleanAns = cleanTextForHumanSpeech(ansText);
+      speakNaturalTamil([`சரியான விடை, ${cleanAns}`]);
+    }
+
+    /* Web Audio Sound Effects */
     let audioCtx = null;
     function getCtx() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -609,6 +726,7 @@
     }
 
     function renderScreen() {
+      stopSpeech();
       clearInterval(timerHandle);
       timerRunning = false;
       countdown = 5;
@@ -623,7 +741,7 @@
 
       const btn = document.getElementById('startBtn');
       btn.disabled = false;
-      btn.textContent = '⏱️ தொடங்கு (5s)';
+      btn.textContent = '⏱️ டைமர் (5s)';
 
       for (let i = 0; i < 4; i++) {
         document.getElementById(`optText${i}`).textContent = q.options[i];
@@ -649,6 +767,7 @@
     }
 
     function startTimer() {
+      stopSpeech();
       getCtx();
       if (timerRunning) return;
       timerRunning = true;
@@ -682,6 +801,7 @@
       if (isLastQuestion) {
         document.getElementById('commentBanner').style.display = 'flex';
         document.getElementById('startBtn').textContent = 'கமெண்ட் பண்ணுங்க!';
+        speakNaturalTamil(['இதற்கான சரியான விடை என்ன? உங்கள் பதிலை கீழே கமெண்ட் பண்ணுங்க!']);
         return;
       }
 
@@ -690,6 +810,9 @@
       row.classList.add('is-correct');
       document.getElementById(`tick${correctIdx}`).innerHTML = '<span class="tick-badge">✔</span>';
       document.getElementById('startBtn').textContent = 'சரியான விடை!';
+
+      // விடை பச்சை நிறத்தில் மாறியதும் இயல்பான குரலில் விடையை வாசிக்கும்
+      speakCorrectAnswer(q.options[correctIdx]);
     }
 
     /* Pen Engine */
@@ -771,7 +894,6 @@
     canvas.addEventListener('mousedown', startDraw);
     canvas.addEventListener('mousemove', draw);
     canvas.addEventListener('mouseup', stopDraw);
-
     canvas.addEventListener('touchstart', startDraw, { passive: false });
     canvas.addEventListener('touchmove', draw, { passive: false });
     canvas.addEventListener('touchend', stopDraw);
@@ -825,6 +947,7 @@
     window.onload = () => {
       resizeCanvas();
       renderScreen();
+      loadBestTamilVoice();
       document.body.addEventListener('touchstart', getCtx, { once: true });
       document.body.addEventListener('click', getCtx, { once: true });
     };
