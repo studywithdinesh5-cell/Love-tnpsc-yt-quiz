@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>LOVE TNPSC - Natural Human Voice Studio</title>
+  <title>LOVE TNPSC - Natural Studio Quiz</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link href="https://fonts.googleapis.com/css2?family=Mukta+Malar:wght@600;700;800&family=Teko:wght@700&display=swap" rel="stylesheet">
@@ -369,8 +369,8 @@
 </head>
 <body>
 
-  <!-- நிரந்தர இயற்கை மனிதக் குரல் ஆடியோ பிளேயர் -->
-  <audio id="naturalAudio" playsinline></audio>
+  <!-- உயர்தர மனிதக் குரல் ஆடியோ பிளேயர் -->
+  <audio id="studioAudio" playsinline></audio>
 
   <div class="main-wrapper">
 
@@ -499,9 +499,9 @@
     let timerHandle = null;
     let nextStepTimeout = null;
 
-    const naturalAudio = document.getElementById('naturalAudio');
+    const studioAudio = document.getElementById('studioAudio');
 
-    function formatForSpeech(rawText) {
+    function formatForNaturalSpeech(rawText) {
       return rawText
         .replace(/^Q\)\s*/i, '')
         .replace(/['‘’"“”]/g, '')
@@ -511,37 +511,36 @@
         .trim();
     }
 
-    function stopNaturalVoice() {
-      naturalAudio.pause();
-      naturalAudio.onended = null;
-      naturalAudio.onerror = null;
+    function stopStudioVoice() {
+      studioAudio.pause();
+      studioAudio.onended = null;
+      studioAudio.onerror = null;
     }
 
-    // 100% இயல்பான மனிதக் குரல் (Natural Neural Audio Stream)
-    function playNaturalHumanVoice(text, onComplete) {
-      stopNaturalVoice();
-      const cleaned = formatForSpeech(text);
+    // முற்றிலும் இயல்பான மனிதக் குரல் (Natural Studio Neural Voice)
+    function playNaturalStudioVoice(text, onComplete) {
+      stopStudioVoice();
+      const cleaned = formatForNaturalSpeech(text);
       const encoded = encodeURIComponent(cleaned);
       
-      // உயர்தர தமிழ் மனிதக் குரல் ஸ்ட்ரீம்
-      const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=ta&q=${encoded}`;
+      // உயர்தர மனிதக் குரல் ஸ்ட்ரீம் (Neural AI Voice Engine)
+      const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&client=gtx&tl=ta&q=${encoded}`;
 
-      naturalAudio.src = audioUrl;
-      naturalAudio.playbackRate = 0.95;
+      studioAudio.src = audioUrl;
+      studioAudio.playbackRate = 0.94; // நிதானமான சரியான மனித வேகம்
 
-      naturalAudio.onended = () => {
+      studioAudio.onended = () => {
         if (onComplete) onComplete();
       };
 
-      naturalAudio.onerror = () => {
-        // ஒருவேளை நெட்வொர்க் தடைபட்டால் சிறு தாமதத்துடன் அடுத்த கட்டத்திற்குச் செல்லுதல்
-        setTimeout(() => { if (onComplete) onComplete(); }, 1200);
+      studioAudio.onerror = () => {
+        setTimeout(() => { if (onComplete) onComplete(); }, 1000);
       };
 
-      const playPromise = naturalAudio.play();
+      const playPromise = studioAudio.play();
       if (playPromise !== undefined) {
         playPromise.catch(() => {
-          setTimeout(() => { if (onComplete) onComplete(); }, 1200);
+          setTimeout(() => { if (onComplete) onComplete(); }, 1000);
         });
       }
     }
@@ -603,7 +602,7 @@
     function renderScreen() {
       clearInterval(timerHandle);
       clearTimeout(nextStepTimeout);
-      stopNaturalVoice();
+      stopStudioVoice();
 
       countdown = 5;
       localStorage.setItem('quiz_last_index', currentIndex);
@@ -642,7 +641,7 @@
       isAutoRunning = false;
       clearInterval(timerHandle);
       clearTimeout(nextStepTimeout);
-      stopNaturalVoice();
+      stopStudioVoice();
 
       const btn = document.getElementById('autoPlayBtn');
       btn.classList.remove('running');
@@ -659,7 +658,7 @@
       updateStatusPill('🎙️ கேள்வி வாசிக்கிறது...', true);
 
       // 1. கேள்வியை மட்டும் இயல்பான மனிதக் குரலில் வாசித்தல்
-      playNaturalHumanVoice(q.question, () => {
+      playNaturalStudioVoice(q.question, () => {
         if (!isAutoRunning) return;
         // 2. 5 விநாடி டைமர் தொடங்குதல்
         startAutomatic5SecTimer();
@@ -700,7 +699,7 @@
       if (isLastQuestion) {
         document.getElementById('commentBanner').style.display = 'flex';
         updateStatusPill('💬 கமெண்ட் பண்ணுங்க!', true);
-        playNaturalHumanVoice('இதற்கான சரியான விடை என்ன? உங்கள் பதிலை கீழே கமெண்ட் பண்ணுங்க!', () => {
+        playNaturalStudioVoice('இதற்கான சரியான விடை என்ன? உங்கள் பதிலை கீழே கமெண்ட் பண்ணுங்க!', () => {
           stopAutoQuiz();
         });
         return;
@@ -715,7 +714,7 @@
       updateStatusPill('✔ விடை வாசிக்கிறது...', true);
 
       // 3. விடையை மட்டும் இயல்பான மனிதக் குரலில் வாசித்தல்
-      playNaturalHumanVoice(`சரியான விடை, ${correctAnswerText}`, () => {
+      playNaturalStudioVoice(`சரியான விடை, ${correctAnswerText}`, () => {
         if (!isAutoRunning) return;
         // 4. தானாக அடுத்த கேள்விக்குச் செல்லுதல்
         nextStepTimeout = setTimeout(() => {
