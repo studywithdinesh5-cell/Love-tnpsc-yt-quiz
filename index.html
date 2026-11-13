@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>LOVE TNPSC - Free Unlimited Gemini Voice</title>
+  <title>LOVE TNPSC - Natural Human Voice Quiz</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link href="https://fonts.googleapis.com/css2?family=Mukta+Malar:wght@600;700;800&family=Teko:wght@700&display=swap" rel="stylesheet">
@@ -356,20 +356,21 @@
       color: #ffffff;
       border-color: #1e3a8a;
     }
-    .modal-card textarea, .modal-card input, .modal-card select {
+    .modal-card textarea {
       width: 100%;
+      height: 160px;
       border: 1px solid #cbd5e1;
       border-radius: 8px;
       padding: 8px;
-      font-size: 13px;
-    }
-    .modal-card textarea {
-      height: 140px;
+      font-size: 12px;
       font-family: monospace;
     }
   </style>
 </head>
 <body>
+
+  <!-- iPhone Silent Mode-லிலும் சவுண்ட் கேட்கும் நிரந்தர HTML5 Audio Player -->
+  <audio id="voicePlayer" playsinline preload="auto"></audio>
 
   <div class="main-wrapper">
 
@@ -399,10 +400,7 @@
         <span id="autoText">Auto Play</span>
       </button>
 
-      <div style="display: flex; align-items: center; gap: 4px;">
-        <button class="btn-edit" onclick="openVoiceSettings()" title="Gemini Voice Settings">🎙️ Voice</button>
-        <button class="btn-edit" onclick="openEditor()">➕ கேள்விகள்</button>
-      </div>
+      <button class="btn-edit" onclick="openEditor()">➕ கேள்விகள்</button>
     </div>
 
     <!-- Question Line -->
@@ -434,7 +432,7 @@
       </div>
 
       <div class="free-writing-space">
-        <div id="statusPill" class="status-pill">தயாராகிறது...</div>
+        <div id="statusPill" class="status-pill">கேள்வி வாசிக்கிறது...</div>
         <div class="gold-timer">
           <span id="timerVal" class="timer-num">5</span>
         </div>
@@ -473,33 +471,6 @@
     </div>
   </div>
 
-  <!-- Gemini Voice API Settings Modal -->
-  <div id="voiceModal" class="modal-wrap">
-    <div class="modal-card">
-      <h3 style="font-size: 16px; font-weight: 800; color: #0b1a78;">🎙️ Gemini 2.5 Free Human Voice</h3>
-      <p style="font-size: 12px; color: #475569; line-height: 1.4;">
-        உங்கள் இலவச <b>Google AI Studio API Key</b>-ஐ உள்ளிடவும். (இலவசத் திட்டத்தில் லிமிட் முடியாமல் தொடர்ந்து இயங்கும் வகையில் Smart Pacing அமைக்கப்பட்டுள்ளது).
-      </p>
-      <input type="text" id="geminiApiKeyInput" placeholder="AIzaSy... (உங்கள் Gemini API Key)">
-      <label style="font-size: 12px; font-weight: 700; color: #1e293b;">குரல் தேர்வு (Voice Persona):</label>
-      <select id="geminiVoiceSelect">
-        <option value="Aoede">Aoede (இயல்பான பெண் குரல் - Warm Female)</option>
-        <option value="Kore">Kore (தெளிவான பெண் குரல் - Clear Female)</option>
-        <option value="Puck">Puck (இயல்பான ஆண் குரல் - Natural Male)</option>
-        <option value="Charon">Charon (கம்பீரமான ஆண் குரல் - Deep Male)</option>
-        <option value="Fenrir">Fenrir (உற்சாகமான ஆண் குரல் - Energetic Male)</option>
-      </select>
-      <div id="voiceTestStatus" style="font-size: 12px; font-weight: 700; color: #059669;"></div>
-      <div style="display: flex; gap: 8px; justify-content: space-between; margin-top: 6px;">
-        <button style="padding: 6px 12px; border: none; background: #eff6ff; color: #1d4ed8; border-radius: 6px; font-weight: 800; cursor: pointer;" onclick="testGeminiVoice()">🔊 Test Voice</button>
-        <div style="display: flex; gap: 8px;">
-          <button style="padding: 6px 14px; border: none; background: #e2e8f0; border-radius: 6px; font-weight: 700; cursor: pointer;" onclick="closeVoiceSettings()">மூடு</button>
-          <button style="padding: 6px 14px; border: none; background: #1e3a8a; color: #fff; border-radius: 6px; font-weight: 700; cursor: pointer;" onclick="saveVoiceSettings()">சேமி (Save)</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- Upload Modal -->
   <div id="editorModal" class="modal-wrap">
     <div class="modal-card">
@@ -523,29 +494,13 @@
     let currentIndex = parseInt(localStorage.getItem('quiz_last_index')) || 0;
     if (currentIndex >= quizData.length) currentIndex = 0;
 
-    let geminiApiKey = localStorage.getItem('gemini_tts_api_key') || '';
-    let geminiVoiceName = localStorage.getItem('gemini_tts_voice') || 'Aoede';
-
     let isAutoRunning = false;
     let countdown = 5;
     let timerHandle = null;
     let nextStepTimeout = null;
-    let activeAudioSource = null;
+    let watchdogTimer = null;
 
-    // Web Audio API - iPhone Safari-யில் ஒருபோதும் பிளாக் ஆகாத நிரந்தர ஆடியோ இன்ஜின்
-    let audioCtx = null;
-    function getCtx() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      return audioCtx;
-    }
-
-    function stopCurrentVoice() {
-      if (activeAudioSource) {
-        try { activeAudioSource.stop(); } catch (e) {}
-        activeAudioSource = null;
-      }
-    }
+    const voicePlayer = document.getElementById('voicePlayer');
 
     function formatForSpeech(rawText) {
       return rawText
@@ -554,195 +509,123 @@
         .replace(/\s*-\s*/g, ', ')
         .replace(/\s*\/\s*/g, ' அல்லது ')
         .replace(/_{2,}/g, ' என்ன ')
+        .replace(/[:;]/g, '.')
         .trim();
     }
 
-    // Raw 24kHz PCM Base64-ஐ நேரடியாக Web Audio API AudioBuffer-ஆக மாற்றுதல்
-    function base64PcmToAudioBuffer(base64Pcm, sampleRate = 24000) {
-      const ctx = getCtx();
-      const binary = atob(base64Pcm);
-      const numSamples = Math.floor(binary.length / 2);
-      const audioBuffer = ctx.createBuffer(1, numSamples, sampleRate);
-      const channelData = audioBuffer.getChannelData(0);
+    // நீளமான வாக்கியங்களைச் சிறிய துண்டுகளாகப் பிரித்தல் (Google Neural TTS வரம்பிற்கு ஏற்ப)
+    function splitTextIntoChunks(text) {
+      const cleaned = formatForSpeech(text);
+      const words = cleaned.split(/\s+/);
+      const chunks = [];
+      let current = "";
 
-      for (let i = 0; i < numSamples; i++) {
-        const low = binary.charCodeAt(i * 2);
-        const high = binary.charCodeAt(i * 2 + 1);
-        let sample = (high << 8) | low;
-        if (sample >= 32768) sample -= 65536;
-        channelData[i] = sample / 32768.0;
-      }
-      return audioBuffer;
-    }
-
-    // AudioBuffer-ஐ உடனே இயக்கும் Function (iPhone Safari 100% Allowed!)
-    function playAudioBuffer(buffer, onEnded) {
-      stopCurrentVoice();
-      const ctx = getCtx();
-      const source = ctx.createBufferSource();
-      source.buffer = buffer;
-      source.connect(ctx.destination);
-      activeAudioSource = source;
-
-      source.onended = () => {
-        if (activeAudioSource === source) activeAudioSource = null;
-        if (onEnded) onEnded();
-      };
-
-      source.start(0);
-    }
-
-    // ஒரே API அழைப்பில் கேள்வி + விடை இரண்டையும் வாங்கி, மௌன இடைவெளி (Silence Gap) மூலம் இரண்டாகப் பிரித்தல்!
-    // இதனால் 50% API Quota சேமிக்கப்படும் (100% Free Tier Friendly)
-    const splitAudioCache = new Map();
-    let lastApiCallTimestamp = 0;
-
-    async function getQuestionAndAnswerBuffers(qObj, customKey = null, customVoice = null) {
-      const key = customKey || geminiApiKey;
-      const voice = customVoice || geminiVoiceName;
-
-      const qClean = formatForSpeech(qObj.question);
-      const ansClean = formatForSpeech(qObj.options[qObj.correct]);
-      const cacheKey = `${voice}:${qClean}|${ansClean}`;
-
-      if (splitAudioCache.has(cacheKey)) {
-        return splitAudioCache.get(cacheKey);
-      }
-
-      // Free Tier Rate Limit (3 RPM = 20 விநாடிக்கு 1 அழைப்பு) பாதுகாப்பிற்கான ஸ்மார்ட் காத்திருப்பு
-      const now = Date.now();
-      const elapsed = now - lastApiCallTimestamp;
-      const minGapMs = 19500; // 19.5 விநாடி இடைவெளி இருந்தால் 429 Quota பிழை வரவே வராது
-      if (lastApiCallTimestamp > 0 && elapsed < minGapMs && !customKey) {
-        const waitSec = Math.ceil((minGapMs - elapsed) / 1000);
-        for (let s = waitSec; s > 0; s--) {
-          if (!isAutoRunning) throw new Error('Stopped');
-          updateStatusPill(`⏳ அடுத்த குரல் தயாராகிறது (${s}s)...`, true);
-          await new Promise(r => setTimeout(r, 1000));
-        }
-      }
-
-      lastApiCallTimestamp = Date.now();
-      updateStatusPill('🎙️ குரல் உருவாக்குகிறது...', true);
-
-      // கேள்விக்கும் பதிலுக்கும் இடையே தெளிவான இடைவெளி வர '...' சேர்த்து ஒரே அழைப்பில் பெறுதல்
-      const combinedPrompt = `${qClean} ... ... ... ... சரியான விடை, ${ansClean}`;
-
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${key}`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: combinedPrompt }] }],
-          generationConfig: {
-            responseModalities: ["AUDIO"],
-            speechConfig: {
-              voiceConfig: {
-                prebuiltVoiceConfig: { voiceName: voice }
-              }
-            }
-          }
-        })
-      });
-
-      if (response.status === 429) {
-        updateStatusPill('⏳ 15s காத்திருக்கிறது...', true);
-        await new Promise(r => setTimeout(r, 15000));
-        if (!isAutoRunning && !customKey) throw new Error('Stopped');
-        lastApiCallTimestamp = 0;
-        return getQuestionAndAnswerBuffers(qObj, customKey, customVoice);
-      }
-
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err?.error?.message || `HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
-      const part = data?.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
-      if (!part || !part.inlineData || !part.inlineData.data) {
-        throw new Error('No audio returned');
-      }
-
-      const fullBuffer = base64PcmToAudioBuffer(part.inlineData.data, 24000);
-      const { qBuffer, aBuffer } = splitBufferAtLongestSilence(fullBuffer);
-
-      const result = { qBuffer, aBuffer };
-      splitAudioCache.set(cacheKey, result);
-      return result;
-    }
-
-    // ஆடியோவில் உள்ள மிக நீளமான மௌனத்தைக் கண்டறிந்து கேள்வி & விடையைத் துல்லியமாக இரண்டாக வெட்டுதல்
-    function splitBufferAtLongestSilence(audioBuffer) {
-      const ctx = getCtx();
-      const data = audioBuffer.getChannelData(0);
-      const sampleRate = audioBuffer.sampleRate;
-      const totalSamples = data.length;
-
-      // ஆடியோவின் 30% முதல் 85% வரையிலான பகுதியில் மிக நீளமான மௌனத்தைத் தேடுதல்
-      const searchStart = Math.floor(totalSamples * 0.25);
-      const searchEnd = Math.floor(totalSamples * 0.85);
-      const threshold = 0.012;
-
-      let maxSilenceLen = 0;
-      let bestSplitSample = Math.floor(totalSamples * 0.65);
-      let currentSilenceStart = -1;
-
-      for (let i = searchStart; i < searchEnd; i++) {
-        if (Math.abs(data[i]) < threshold) {
-          if (currentSilenceStart === -1) currentSilenceStart = i;
+      for (const word of words) {
+        if ((current + " " + word).trim().length <= 160) {
+          current = (current + " " + word).trim();
         } else {
-          if (currentSilenceStart !== -1) {
-            const len = i - currentSilenceStart;
-            if (len > maxSilenceLen) {
-              maxSilenceLen = len;
-              bestSplitSample = currentSilenceStart + Math.floor(len / 2);
-            }
-            currentSilenceStart = -1;
-          }
+          if (current) chunks.push(current);
+          current = word;
         }
       }
-
-      const qLen = Math.max(1, bestSplitSample);
-      const aLen = Math.max(1, totalSamples - bestSplitSample);
-
-      const qBuffer = ctx.createBuffer(1, qLen, sampleRate);
-      qBuffer.getChannelData(0).set(data.subarray(0, qLen));
-
-      const aBuffer = ctx.createBuffer(1, aLen, sampleRate);
-      aBuffer.getChannelData(0).set(data.subarray(bestSplitSample));
-
-      return { qBuffer, aBuffer };
+      if (current) chunks.push(current);
+      return chunks;
     }
 
-    async function testGeminiVoice() {
-      getCtx();
-      const key = document.getElementById('geminiApiKeyInput').value.trim();
-      const voice = document.getElementById('geminiVoiceSelect').value;
-      const statusEl = document.getElementById('voiceTestStatus');
+    function stopAllSpeech() {
+      clearTimeout(watchdogTimer);
+      voicePlayer.pause();
+      voicePlayer.onended = null;
+      voicePlayer.onerror = null;
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    }
 
-      if (!key) {
-        statusEl.style.color = '#dc2626';
-        statusEl.textContent = 'முதலில் API Key-ஐ உள்ளிடவும்!';
+    // API Key எதுவும் இல்லாமல் 100% இலவசமாக இயங்கும் Google Neural Tamil Voice
+    function speakHumanTamil(rawText, onComplete) {
+      stopAllSpeech();
+      const chunks = splitTextIntoChunks(rawText);
+      if (chunks.length === 0) {
+        if (onComplete) onComplete();
         return;
       }
 
-      statusEl.style.color = '#1d4ed8';
-      statusEl.textContent = '⏳ மனிதக் குரல் தயாராகிறது...';
+      let chunkIdx = 0;
 
-      try {
-        const testQ = { question: "வணக்கம்! தேர்வுக்குத் தயாராகலாம்.", options: ["வெற்றி நிச்சயம்"], correct: 0 };
-        const { qBuffer } = await getQuestionAndAnswerBuffers(testQ, key, voice);
-        statusEl.style.color = '#059669';
-        statusEl.textContent = '✔ குரல் அருமையாக வேலை செய்கிறது!';
-        playAudioBuffer(qBuffer);
-      } catch (e) {
-        statusEl.style.color = '#dc2626';
-        statusEl.textContent = `❌ பிழை: ${e.message}`;
+      function playNextChunk() {
+        if (!isAutoRunning) return;
+        if (chunkIdx >= chunks.length) {
+          if (onComplete) onComplete();
+          return;
+        }
+
+        const chunkText = chunks[chunkIdx];
+        const encoded = encodeURIComponent(chunkText);
+        // Google Translate Neural Tamil Female Voice (எந்த API Key-ம் இல்லாமல் 100% இலவசம் & லிமிட் இல்லாதது)
+        const ttsUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=gtx&tl=ta&q=${encoded}`;
+
+        let finished = false;
+        function finishChunk() {
+          if (finished) return;
+          finished = true;
+          clearTimeout(watchdogTimer);
+          chunkIdx++;
+          playNextChunk();
+        }
+
+        voicePlayer.src = ttsUrl;
+        voicePlayer.playbackRate = 0.96;
+
+        voicePlayer.onended = () => {
+          setTimeout(finishChunk, 150);
+        };
+
+        voicePlayer.onerror = () => {
+          // நெட்வொர்க் தடையிருந்தால் மட்டும் Backup Voice
+          fallbackNativeVoice(chunkText, finishChunk);
+        };
+
+        // பாதுகாப்பு Watchdog (சவுண்ட் பாதியில் நின்றால் அடுத்த கட்டத்திற்கு நகர்த்த)
+        const maxDuration = Math.max(2500, chunkText.length * 130);
+        watchdogTimer = setTimeout(finishChunk, maxDuration);
+
+        const playPromise = voicePlayer.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            fallbackNativeVoice(chunkText, finishChunk);
+          });
+        }
       }
+
+      playNextChunk();
+    }
+
+    function fallbackNativeVoice(text, done) {
+      if (!('speechSynthesis' in window)) {
+        setTimeout(done, 1200);
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      const voices = window.speechSynthesis.getVoices();
+      const taVoice = voices.find(v => v.lang && v.lang.includes('ta'));
+      if (taVoice) u.voice = taVoice;
+      u.lang = 'ta-IN';
+      u.rate = 0.92;
+      u.onend = () => done();
+      u.onerror = () => done();
+      window.speechSynthesis.speak(u);
     }
 
     /* Sound Effects */
+    let audioCtx = null;
+    function getCtx() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
     function playTick() {
       try {
         const ctx = getCtx();
@@ -792,7 +675,7 @@
     function renderScreen() {
       clearInterval(timerHandle);
       clearTimeout(nextStepTimeout);
-      stopCurrentVoice();
+      stopAllSpeech();
 
       countdown = 5;
       localStorage.setItem('quiz_last_index', currentIndex);
@@ -815,10 +698,6 @@
 
     function toggleAutoQuiz() {
       getCtx();
-      if (!geminiApiKey) {
-        openVoiceSettings();
-        return;
-      }
       if (isAutoRunning) {
         stopAutoQuiz();
       } else {
@@ -835,7 +714,7 @@
       isAutoRunning = false;
       clearInterval(timerHandle);
       clearTimeout(nextStepTimeout);
-      stopCurrentVoice();
+      stopAllSpeech();
 
       const btn = document.getElementById('autoPlayBtn');
       btn.classList.remove('running');
@@ -844,49 +723,19 @@
       updateStatusPill('', false);
     }
 
-    let currentAnswerBuffer = null;
-
-    async function runCurrentQuestionCycle() {
+    function runCurrentQuestionCycle() {
       if (!isAutoRunning) return;
       renderScreen();
 
       const q = quizData[currentIndex];
-      const isLastQuestion = (currentIndex === quizData.length - 1);
+      updateStatusPill('🎙️ கேள்வி வாசிக்கிறது...', true);
 
-      try {
-        if (isLastQuestion) {
-          const lastQObj = {
-            question: q.question,
-            options: ["இதற்கான சரியான விடை என்ன? உங்கள் பதிலை கீழே கமெண்ட் பண்ணுங்க!"],
-            correct: 0
-          };
-          const { qBuffer, aBuffer } = await getQuestionAndAnswerBuffers(lastQObj);
-          if (!isAutoRunning) return;
-          currentAnswerBuffer = aBuffer;
-
-          updateStatusPill('🎙️ கேள்வி வாசிக்கிறது...', true);
-          playAudioBuffer(qBuffer, () => {
-            if (!isAutoRunning) return;
-            startAutomatic5SecTimer();
-          });
-          return;
-        }
-
-        // ஒரே API அழைப்பில் கேள்வி & பதில் இரண்டையும் பெறுதல்
-        const { qBuffer, aBuffer } = await getQuestionAndAnswerBuffers(q);
+      // 1. கேள்வியை மட்டும் மனிதக் குரலில் வாசித்தல் (4 ஆப்ஷன்களை வாசிக்காது)
+      speakHumanTamil(q.question, () => {
         if (!isAutoRunning) return;
-        currentAnswerBuffer = aBuffer;
-
-        updateStatusPill('🎙️ கேள்வி வாசிக்கிறது...', true);
-        playAudioBuffer(qBuffer, () => {
-          if (!isAutoRunning) return;
-          startAutomatic5SecTimer();
-        });
-      } catch (err) {
-        if (!isAutoRunning) return;
-        updateStatusPill('⏱️ டைமர் தொடங்குகிறது...', true);
+        // 2. கேள்வி முடிந்ததும் 5 விநாடி டைமர் தொடங்குதல்
         startAutomatic5SecTimer();
-      }
+      });
     }
 
     function startAutomatic5SecTimer() {
@@ -920,38 +769,29 @@
       const q = quizData[currentIndex];
       const isLastQuestion = (currentIndex === quizData.length - 1);
 
+      // கடைசி கேள்விக்கு பச்சை விடை காட்டாமல் கமெண்ட் பேனர் காட்டுதல்
       if (isLastQuestion) {
         document.getElementById('commentBanner').style.display = 'flex';
         updateStatusPill('💬 கமெண்ட் பண்ணுங்க!', true);
-        if (currentAnswerBuffer) {
-          playAudioBuffer(currentAnswerBuffer, () => stopAutoQuiz());
-        } else {
+        speakHumanTamil('இதற்கான சரியான விடை என்ன? உங்கள் பதிலை கீழே கமெண்ட் பண்ணுங்க!', () => {
           stopAutoQuiz();
-        }
+        });
         return;
       }
 
+      // பச்சை நிறத்தில் விடையை ஹைலைட் + டிக் மார்க் செய்தல்
       const correctIdx = q.correct;
       const row = document.getElementById(`optRow${correctIdx}`);
       row.classList.add('is-correct');
       document.getElementById(`tick${correctIdx}`).innerHTML = '<span class="tick-badge">✔</span>';
 
+      const correctAnswerText = q.options[correctIdx];
       updateStatusPill('✔ விடை வாசிக்கிறது...', true);
 
-      if (currentAnswerBuffer) {
-        playAudioBuffer(currentAnswerBuffer, () => {
-          if (!isAutoRunning) return;
-          nextStepTimeout = setTimeout(() => {
-            if (!isAutoRunning) return;
-            if (currentIndex < quizData.length - 1) {
-              currentIndex++;
-              runCurrentQuestionCycle();
-            } else {
-              stopAutoQuiz();
-            }
-          }, 1500);
-        });
-      } else {
+      // 3. விடையை மட்டும் மனிதக் குரலில் வாசித்தல்
+      speakHumanTamil(`சரியான விடை, ${correctAnswerText}`, () => {
+        if (!isAutoRunning) return;
+        // 4. தானாக அடுத்த கேள்விக்குச் செல்லுதல்
         nextStepTimeout = setTimeout(() => {
           if (!isAutoRunning) return;
           if (currentIndex < quizData.length - 1) {
@@ -960,8 +800,8 @@
           } else {
             stopAutoQuiz();
           }
-        }, 2000);
-      }
+        }, 1600);
+      });
     }
 
     function manualNext() {
@@ -978,26 +818,6 @@
         if (isAutoRunning) runCurrentQuestionCycle();
         else renderScreen();
       }
-    }
-
-    /* Voice Settings Modal */
-    function openVoiceSettings() {
-      stopAutoQuiz();
-      document.getElementById('geminiApiKeyInput').value = geminiApiKey;
-      document.getElementById('geminiVoiceSelect').value = geminiVoiceName;
-      document.getElementById('voiceTestStatus').textContent = '';
-      document.getElementById('voiceModal').style.display = 'flex';
-    }
-    function closeVoiceSettings() {
-      document.getElementById('voiceModal').style.display = 'none';
-    }
-    function saveVoiceSettings() {
-      geminiApiKey = document.getElementById('geminiApiKeyInput').value.trim();
-      geminiVoiceName = document.getElementById('geminiVoiceSelect').value;
-      localStorage.setItem('gemini_tts_api_key', geminiApiKey);
-      localStorage.setItem('gemini_tts_voice', geminiVoiceName);
-      splitAudioCache.clear();
-      closeVoiceSettings();
     }
 
     /* Pen Engine */
@@ -1123,7 +943,6 @@
           quizData = parsed;
           localStorage.setItem('quizData_saved', JSON.stringify(quizData));
           currentIndex = 0;
-          splitAudioCache.clear();
           closeEditor();
           renderScreen();
         }
