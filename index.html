@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>LOVE TNPSC - Auto Voice Quiz</title>
+  <title>LOVE TNPSC - Gemini 2.5 Voice Studio</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link href="https://fonts.googleapis.com/css2?family=Mukta+Malar:wght@600;700;800&family=Teko:wght@700&display=swap" rel="stylesheet">
@@ -58,21 +58,7 @@
       white-space: nowrap;
     }
 
-    .grid-trigger-btn {
-      background: #f1f5f9;
-      color: #0f172a;
-      border: 1.5px solid #cbd5e1;
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 800;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .nav-btn {
+    .grid-trigger-btn, .nav-btn, .pen-toggle-btn, .btn-edit {
       background: #f1f5f9;
       color: #0f172a;
       border: 1px solid #cbd5e1;
@@ -81,26 +67,11 @@
       font-size: 12px;
       font-weight: 800;
       cursor: pointer;
-      transition: all 0.15s ease;
-    }
-    .nav-btn:active {
-      transform: scale(0.92);
-      background: #e2e8f0;
-    }
-
-    .pen-toggle-btn {
-      background: #f8fafc;
-      color: #0f172a;
-      border: 1.5px solid #cbd5e1;
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 800;
-      cursor: pointer;
       display: flex;
       align-items: center;
       gap: 4px;
     }
+
     .pen-toggle-btn.active {
       background: #ef4444 !important;
       color: #ffffff !important;
@@ -124,18 +95,6 @@
     }
     .auto-btn.running {
       background: linear-gradient(135deg, #dc2626, #991b1b);
-      box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);
-    }
-
-    .btn-edit {
-      background: #f8fafc;
-      color: #334155;
-      border: 1px solid #cbd5e1;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 700;
-      cursor: pointer;
     }
 
     /* Question Title */
@@ -226,18 +185,17 @@
       position: relative;
     }
 
-    /* Status Pill on Top Right of Writing Space */
     .status-pill {
       position: absolute;
       top: 4px;
       right: 4px;
-      background: #f1f5f9;
-      color: #334155;
+      background: #eff6ff;
+      color: #1e40af;
       font-size: 11px;
       font-weight: 800;
-      padding: 3px 10px;
+      padding: 4px 12px;
       border-radius: 20px;
-      border: 1px solid #cbd5e1;
+      border: 1px solid #bfdbfe;
       display: none;
     }
 
@@ -350,8 +308,8 @@
       color: #ffffff;
     }
 
-    /* Grid Modal */
-    .grid-modal {
+    /* Modals */
+    .grid-modal, .modal-wrap {
       display: none;
       position: fixed;
       inset: 0;
@@ -362,16 +320,16 @@
       z-index: 100;
       padding: 12px;
     }
-    .grid-content {
+    .grid-content, .modal-card {
       background: #ffffff;
       border-radius: 14px;
       padding: 16px;
       width: 100%;
-      max-width: 600px;
+      max-width: 550px;
       max-height: 85vh;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
     }
     .tiles-wrapper {
       display: grid;
@@ -396,34 +354,15 @@
       color: #ffffff;
       border-color: #1e3a8a;
     }
-
-    /* Upload Modal */
-    .modal-wrap {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-    }
-    .modal-card {
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 16px;
-      width: 90%;
-      max-width: 500px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .modal-card textarea {
+    .modal-card textarea, .modal-card input, .modal-card select {
       width: 100%;
-      height: 160px;
       border: 1px solid #cbd5e1;
       border-radius: 8px;
       padding: 8px;
-      font-size: 12px;
+      font-size: 13px;
+    }
+    .modal-card textarea {
+      height: 140px;
       font-family: monospace;
     }
   </style>
@@ -444,8 +383,8 @@
       </div>
 
       <div style="display: flex; align-items: center; gap: 5px;">
-        <button class="nav-btn" onclick="manualPrev()" title="முந்தைய கேள்வி">◀ பின்</button>
-        <button class="nav-btn" onclick="manualNext()" title="அடுத்த கேள்வி">முன் ▶</button>
+        <button class="nav-btn" onclick="manualPrev()">◀ பின்</button>
+        <button class="nav-btn" onclick="manualNext()">முன் ▶</button>
 
         <button id="penToggleBtn" class="pen-toggle-btn" onclick="togglePenMode()">
           <span>✏️</span>
@@ -459,7 +398,10 @@
         <span id="autoText">Auto Play</span>
       </button>
 
-      <button class="btn-edit" onclick="openEditor()">➕ கேள்விகள்</button>
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <button class="btn-edit" onclick="openVoiceSettings()" title="Gemini Voice Settings">🎙️ Voice</button>
+        <button class="btn-edit" onclick="openEditor()">➕ கேள்விகள்</button>
+      </div>
     </div>
 
     <!-- Question Line -->
@@ -530,6 +472,28 @@
     </div>
   </div>
 
+  <!-- Gemini Voice API Settings Modal -->
+  <div id="voiceModal" class="modal-wrap">
+    <div class="modal-card">
+      <h3 style="font-size: 16px; font-weight: 800; color: #0b1a78;">🎙️ Gemini 2.5 Natural Human Voice</h3>
+      <p style="font-size: 12px; color: #475569; line-height: 1.4;">
+        ரோபோட்டிக் குரல் இல்லாமல், <b>Gemini 2.5 Flash</b>-ன் இயல்பான மனிதக் குரலில் தமிழ் வாசிக்க உங்கள் இலவச <b>Google AI Studio API Key</b>-ஐ உள்ளிடவும்:
+      </p>
+      <input type="password" id="geminiApiKeyInput" placeholder="AIzaSy... (உங்கள் Gemini API Key)">
+      <label style="font-size: 12px; font-weight: 700; color: #1e293b;">குரல் தேர்வு (Voice Persona):</label>
+      <select id="geminiVoiceSelect">
+        <option value="Aoede">Aoede (இனிமையான பெண் குரல் - Natural Female)</option>
+        <option value="Kore">Kore (தெளிவான பெண் குரல் - Clear Female)</option>
+        <option value="Puck">Puck (இயல்பான ஆண் குரல் - Natural Male)</option>
+        <option value="Charon">Charon (கம்பீரமான ஆண் குரல் - Deep Male)</option>
+      </select>
+      <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px;">
+        <button style="padding: 6px 14px; border: none; background: #e2e8f0; border-radius: 6px; font-weight: 700; cursor: pointer;" onclick="closeVoiceSettings()">மூடு</button>
+        <button style="padding: 6px 14px; border: none; background: #1e3a8a; color: #fff; border-radius: 6px; font-weight: 700; cursor: pointer;" onclick="saveVoiceSettings()">சேமி (Save)</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Upload Modal -->
   <div id="editorModal" class="modal-wrap">
     <div class="modal-card">
@@ -553,92 +517,142 @@
     let currentIndex = parseInt(localStorage.getItem('quiz_last_index')) || 0;
     if (currentIndex >= quizData.length) currentIndex = 0;
 
+    let geminiApiKey = localStorage.getItem('gemini_tts_api_key') || '';
+    let geminiVoiceName = localStorage.getItem('gemini_tts_voice') || 'Aoede';
+
     let isAutoRunning = false;
     let countdown = 5;
     let timerHandle = null;
     let nextStepTimeout = null;
-    let speechWatchdog = null;
+    let activeAudio = null;
 
-    /* ===================================================================== */
-    /* இயல்பான மனிதக் குரல் தேர்வு (Natural Neural / Enhanced Tamil Voice)   */
-    /* ===================================================================== */
-    let bestTamilVoice = null;
-
-    function pickBestNaturalTamilVoice() {
-      if (!('speechSynthesis' in window)) return;
-      const voices = window.speechSynthesis.getVoices();
-      const tamilVoices = voices.filter(v => v.lang && v.lang.toLowerCase().includes('ta'));
-
-      if (tamilVoices.length === 0) return;
-
-      // Priority 1: Microsoft Neural / Online Natural Voices (Pallavi / Valluvar)
-      // Priority 2: Apple Enhanced / Premium / Siri / Vani Voices
-      // Priority 3: Google Tamil India
-      bestTamilVoice =
-        tamilVoices.find(v => /Natural|Neural|Online|Pallavi|Valluvar/i.test(v.name)) ||
-        tamilVoices.find(v => /Enhanced|Premium|Siri|Vani/i.test(v.name)) ||
-        tamilVoices.find(v => /Google/i.test(v.name)) ||
-        tamilVoices[0];
-    }
-
-    if ('speechSynthesis' in window) {
-      pickBestNaturalTamilVoice();
-      window.speechSynthesis.onvoiceschanged = pickBestNaturalTamilVoice;
-    }
-
-    function formatForHumanSpeech(rawText) {
+    function formatForSpeech(rawText) {
       return rawText
-        .replace(/^Q\)\s*/i, '')              // 'Q)' நீக்குதல்
-        .replace(/['‘’"“”]/g, '')              // மேற்கோள் குறிகளை நீக்குதல் (இயல்பான உச்சரிப்பிற்கு)
-        .replace(/\s*-\s*/g, ', ')            // '-' இடத்தில் இயல்பான மூச்சு இடைவெளி
-        .replace(/\s*\/\s*/g, ' அல்லது ')      // '/' இடத்தில் 'அல்லது'
-        .replace(/_{2,}/g, ' என்ன ')          // கோடிட்ட இடத்திற்கு 'என்ன'
-        .replace(/[:;]/g, '.')
+        .replace(/^Q\)\s*/i, '')
+        .replace(/['‘’"“”]/g, '')
+        .replace(/\s*-\s*/g, ', ')
+        .replace(/\s*\/\s*/g, ' அல்லது ')
+        .replace(/_{2,}/g, ' என்ன ')
         .trim();
     }
 
-    // ஒரு வாக்கியத்தை மட்டும் இயல்பான மனிதக் குரலில் வாசித்து, முடிந்ததும் callback-ஐ இயக்கும்
-    function speakSingleText(text, onDone) {
-      clearTimeout(speechWatchdog);
+    // PCM (24kHz) ஆடியோவை WAV ஆக மாற்றும் Helper
+    function pcmToWav(base64Pcm, sampleRate = 24000) {
+      const binary = atob(base64Pcm);
+      const pcmLength = binary.length;
+      const buffer = new ArrayBuffer(44 + pcmLength);
+      const view = new DataView(buffer);
+
+      const writeString = (offset, str) => {
+        for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+      };
+
+      writeString(0, 'RIFF');
+      view.setUint32(4, 36 + pcmLength, true);
+      writeString(8, 'WAVE');
+      writeString(12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * 2, true);
+      view.setUint16(32, 2, true);
+      view.setUint16(34, 16, true);
+      writeString(36, 'data');
+      view.setUint32(40, pcmLength, true);
+
+      const bytes = new Uint8Array(buffer, 44);
+      for (let i = 0; i < pcmLength; i++) bytes[i] = binary.charCodeAt(i);
+
+      return new Blob([buffer], { type: 'audio/wav' });
+    }
+
+    // Gemini 2.5 Flash Native Audio API மூலம் இயல்பான மனிதக் குரல் உருவாக்கம்
+    async function speakWithGemini25(text, onDone) {
+      const cleaned = formatForSpeech(text);
+
+      if (activeAudio) {
+        activeAudio.pause();
+        activeAudio = null;
+      }
+
+      if (!geminiApiKey) {
+        fallbackBrowserSpeech(cleaned, onDone);
+        return;
+      }
+
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`;
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: `Read this Tamil text naturally like a warm, clear Tamil teacher: "${cleaned}"`
+              }]
+            }],
+            generationConfig: {
+              responseModalities: ["AUDIO"],
+              speechConfig: {
+                voiceConfig: {
+                  prebuiltVoiceConfig: {
+                    voiceName: geminiVoiceName
+                  }
+                }
+              }
+            }
+          })
+        });
+
+        if (!response.ok) throw new Error('API Error');
+        const data = await response.json();
+        const part = data?.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+
+        if (part && part.inlineData && part.inlineData.data) {
+          const mime = part.inlineData.mimeType || '';
+          let audioBlob;
+          if (mime.includes('pcm') || mime.includes('L16')) {
+            audioBlob = pcmToWav(part.inlineData.data, 24000);
+          } else {
+            const byteChars = atob(part.inlineData.data);
+            const byteNums = new Uint8Array(byteChars.length);
+            for (let i = 0; i < byteChars.length; i++) byteNums[i] = byteChars.charCodeAt(i);
+            audioBlob = new Blob([byteNums], { type: mime || 'audio/wav' });
+          }
+
+          const audioUrl = URL.createObjectURL(audioBlob);
+          activeAudio = new Audio(audioUrl);
+          activeAudio.onended = () => {
+            URL.revokeObjectURL(audioUrl);
+            if (onDone) onDone();
+          };
+          activeAudio.onerror = () => {
+            if (onDone) onDone();
+          };
+          await activeAudio.play();
+        } else {
+          fallbackBrowserSpeech(cleaned, onDone);
+        }
+      } catch (err) {
+        fallbackBrowserSpeech(cleaned, onDone);
+      }
+    }
+
+    function fallbackBrowserSpeech(cleaned, onDone) {
       if (!('speechSynthesis' in window)) {
         setTimeout(onDone, 1200);
         return;
       }
-
       window.speechSynthesis.cancel();
-      pickBestNaturalTamilVoice();
-
-      const cleaned = formatForHumanSpeech(text);
       const utter = new SpeechSynthesisUtterance(cleaned);
-
-      if (bestTamilVoice) {
-        utter.voice = bestTamilVoice;
-      }
+      const voices = window.speechSynthesis.getVoices();
+      const taVoice = voices.find(v => v.lang && v.lang.includes('ta'));
+      if (taVoice) utter.voice = taVoice;
       utter.lang = 'ta-IN';
-      utter.rate = 0.90;   // நிதானமான, தெளிவான மனித வேகம்
-      utter.pitch = 1.0;   // இயல்பான குரல் சுருதி (Robotic இல்லாமல் இருக்க 1.0)
-      utter.volume = 1.0;
-
-      let finished = false;
-      function completeOnce() {
-        if (finished) return;
-        finished = true;
-        clearTimeout(speechWatchdog);
-        if (onDone) onDone();
-      }
-
-      utter.onend = () => {
-        setTimeout(completeOnce, 250);
-      };
-
-      utter.onerror = () => {
-        completeOnce();
-      };
-
-      // Safari-யில் சில சமயம் onend trigger ஆகாமல் நின்றால் பாதுகாப்பிற்கான Watchdog
-      const estimatedMs = Math.max(2500, cleaned.length * 135);
-      speechWatchdog = setTimeout(completeOnce, estimatedMs);
-
+      utter.rate = 0.92;
+      utter.onend = () => { if (onDone) onDone(); };
+      utter.onerror = () => { if (onDone) onDone(); };
       window.speechSynthesis.speak(utter);
     }
 
@@ -699,7 +713,7 @@
     function renderScreen() {
       clearInterval(timerHandle);
       clearTimeout(nextStepTimeout);
-      clearTimeout(speechWatchdog);
+      if (activeAudio) { activeAudio.pause(); activeAudio = null; }
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 
       countdown = 5;
@@ -721,12 +735,12 @@
       clearCanvas();
     }
 
-    /* ===================================================================== */
-    /* 100% AUTOMATIC FLOW:                                                  */
-    /* 1. கேள்வி மட்டும் வாசி -> 2. 5s டைமர் -> 3. விடை Green Tick & வாசி -> 4. Next */
-    /* ===================================================================== */
     function toggleAutoQuiz() {
       getCtx();
+      if (!geminiApiKey) {
+        openVoiceSettings();
+        return;
+      }
       if (isAutoRunning) {
         stopAutoQuiz();
       } else {
@@ -743,7 +757,7 @@
       isAutoRunning = false;
       clearInterval(timerHandle);
       clearTimeout(nextStepTimeout);
-      clearTimeout(speechWatchdog);
+      if (activeAudio) { activeAudio.pause(); activeAudio = null; }
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 
       const btn = document.getElementById('autoPlayBtn');
@@ -758,12 +772,12 @@
       renderScreen();
 
       const q = quizData[currentIndex];
-      updateStatusPill('🔊 கேள்வி வாசிக்கிறது...', true);
+      updateStatusPill('🎙️ Gemini 2.5 வாசிக்கிறது...', true);
 
-      // படி 1: கேள்வியை மட்டும் இயல்பான குரலில் வாசி (Options வாசிக்காது)
-      speakSingleText(q.question, () => {
+      // 1. கேள்வியை மட்டும் Gemini 2.5 Flash குரலில் வாசித்தல்
+      speakWithGemini25(q.question, () => {
         if (!isAutoRunning) return;
-        // படி 2: கேள்வி வாசித்து முடித்தவுடன் 5 விநாடி டைமர் தொடங்கு
+        // 2. 5 விநாடி டைமர் தொடங்குதல்
         startAutomatic5SecTimer();
       });
     }
@@ -787,7 +801,6 @@
         } else {
           clearInterval(timerHandle);
           document.getElementById('timerVal').textContent = '0';
-          // படி 3: டைமர் முடிந்ததும் விடையைக் காட்டி வாசி
           revealAndSpeakAnswer();
         }
       }, 1000);
@@ -800,17 +813,15 @@
       const q = quizData[currentIndex];
       const isLastQuestion = (currentIndex === quizData.length - 1);
 
-      // கடைசி கேள்வி என்றால் கமெண்ட் பேனர் காட்டி வாசித்து நிறுத்து
       if (isLastQuestion) {
         document.getElementById('commentBanner').style.display = 'flex';
         updateStatusPill('💬 கமெண்ட் பண்ணுங்க!', true);
-        speakSingleText('இதற்கான சரியான விடை என்ன? உங்கள் பதிலை கீழே கமெண்ட் பண்ணுங்க!', () => {
+        speakWithGemini25('இதற்கான சரியான விடை என்ன? உங்கள் பதிலை கீழே கமெண்ட் பண்ணுங்க!', () => {
           stopAutoQuiz();
         });
         return;
       }
 
-      // பச்சை நிறத்தில் விடையை ஹைலைட் + டிக் மார்க் செய்தல்
       const correctIdx = q.correct;
       const row = document.getElementById(`optRow${correctIdx}`);
       row.classList.add('is-correct');
@@ -819,10 +830,10 @@
       const correctAnswerText = q.options[correctIdx];
       updateStatusPill('✔ விடை வாசிக்கிறது...', true);
 
-      // சரியான விடையை மட்டும் குரலில் வாசித்தல்
-      speakSingleText(`சரியான விடை, ${correctAnswerText}`, () => {
+      // 3. விடையை மட்டும் Gemini 2.5 Flash குரலில் வாசித்தல்
+      speakWithGemini25(`சரியான விடை, ${correctAnswerText}`, () => {
         if (!isAutoRunning) return;
-        // படி 4: விடை வாசித்து முடித்த 2 விநாடியில் தானாக அடுத்த கேள்விக்குச் செல்லுதல்
+        // 4. தானாக அடுத்த கேள்விக்குச் செல்லுதல்
         nextStepTimeout = setTimeout(() => {
           if (!isAutoRunning) return;
           if (currentIndex < quizData.length - 1) {
@@ -831,30 +842,42 @@
           } else {
             stopAutoQuiz();
           }
-        }, 2000);
+        }, 1800);
       });
     }
 
     function manualNext() {
       if (currentIndex < quizData.length - 1) {
         currentIndex++;
-        if (isAutoRunning) {
-          runCurrentQuestionCycle();
-        } else {
-          renderScreen();
-        }
+        if (isAutoRunning) runCurrentQuestionCycle();
+        else renderScreen();
       }
     }
 
     function manualPrev() {
       if (currentIndex > 0) {
         currentIndex--;
-        if (isAutoRunning) {
-          runCurrentQuestionCycle();
-        } else {
-          renderScreen();
-        }
+        if (isAutoRunning) runCurrentQuestionCycle();
+        else renderScreen();
       }
+    }
+
+    /* Voice Settings Modal */
+    function openVoiceSettings() {
+      stopAutoQuiz();
+      document.getElementById('geminiApiKeyInput').value = geminiApiKey;
+      document.getElementById('geminiVoiceSelect').value = geminiVoiceName;
+      document.getElementById('voiceModal').style.display = 'flex';
+    }
+    function closeVoiceSettings() {
+      document.getElementById('voiceModal').style.display = 'none';
+    }
+    function saveVoiceSettings() {
+      geminiApiKey = document.getElementById('geminiApiKeyInput').value.trim();
+      geminiVoiceName = document.getElementById('geminiVoiceSelect').value;
+      localStorage.setItem('gemini_tts_api_key', geminiApiKey);
+      localStorage.setItem('gemini_tts_voice', geminiVoiceName);
+      closeVoiceSettings();
     }
 
     /* Pen Engine */
@@ -951,11 +974,8 @@
         btn.onclick = () => {
           currentIndex = idx;
           closeGridModal();
-          if (isAutoRunning) {
-            runCurrentQuestionCycle();
-          } else {
-            renderScreen();
-          }
+          if (isAutoRunning) runCurrentQuestionCycle();
+          else renderScreen();
         };
         container.appendChild(btn);
       });
@@ -994,7 +1014,6 @@
     window.onload = () => {
       resizeCanvas();
       renderScreen();
-      pickBestNaturalTamilVoice();
       document.body.addEventListener('touchstart', getCtx, { once: true });
       document.body.addEventListener('click', getCtx, { once: true });
     };
