@@ -185,6 +185,7 @@
       position: relative;
     }
 
+    /* சிறிய, சுத்தமான ஸ்டேட்டஸ் பேட்ஜ் (திரையை மறைக்காது) */
     .status-pill {
       position: absolute;
       top: 4px;
@@ -197,12 +198,8 @@
       border-radius: 20px;
       border: 1px solid #bfdbfe;
       display: none;
-    }
-
-    .status-pill.error {
-      background: #fef2f2;
-      color: #b91c1c;
-      border-color: #fecaca;
+      max-width: 170px;
+      text-align: center;
     }
 
     .gold-timer {
@@ -375,6 +372,9 @@
 </head>
 <body>
 
+  <!-- iPhone Safari Autoplay தடையை நீக்க ஒரே ஒரு நிரந்தர Audio Element -->
+  <audio id="globalPlayer" playsinline></audio>
+
   <div class="main-wrapper">
 
     <!-- Header Bar -->
@@ -398,7 +398,6 @@
         </button>
       </div>
       
-      <!-- முழு ஆட்டோமேட்டிக் பிளே பட்டன் -->
       <button id="autoPlayBtn" class="auto-btn" onclick="toggleAutoQuiz()">
         <span id="autoIcon">▶️</span>
         <span id="autoText">Auto Play</span>
@@ -483,7 +482,7 @@
     <div class="modal-card">
       <h3 style="font-size: 16px; font-weight: 800; color: #0b1a78;">🎙️ Gemini 2.5 Natural Human Voice</h3>
       <p style="font-size: 12px; color: #475569; line-height: 1.4;">
-        உங்கள் <b>Google AI Studio API Key</b>-ஐ உள்ளிட்டு, <b>Test Voice</b> தட்டி மனிதக் குரலைச் சோதித்துக் கொள்ளுங்கள்:
+        உங்கள் <b>Google AI Studio API Key</b>-ஐ உள்ளிடவும் (Free Tier-ல் நிமிடத்திற்கு 3 வினாக்கள் வீதம் இயங்கும்):
       </p>
       <input type="text" id="geminiApiKeyInput" placeholder="AIzaSy... (உங்கள் Gemini API Key)">
       <label style="font-size: 12px; font-weight: 700; color: #1e293b;">குரல் தேர்வு (Voice Persona):</label>
@@ -535,8 +534,17 @@
     let countdown = 5;
     let timerHandle = null;
     let nextStepTimeout = null;
-    let activeAudio = null;
     const audioCache = new Map();
+    const globalPlayer = document.getElementById('globalPlayer');
+
+    // iPhone Safari Audio Unlock (பட்டனை அழுத்திய நொடியே பிளேயரைத் திறந்து வைத்தல்)
+    function unlockSafariAudio() {
+      try {
+        const silentWav = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
+        globalPlayer.src = silentWav;
+        globalPlayer.play().catch(() => {});
+      } catch (e) {}
+    }
 
     function formatForSpeech(rawText) {
       return rawText
@@ -578,8 +586,8 @@
       return new Blob([buffer], { type: 'audio/wav' });
     }
 
-    // Google AI Studio-வின் அசல் Gemini 2.5 TTS மாடலில் இருந்து ஆடியோ பெறுதல்
-    async function fetchGeminiAudioBlob(rawText, customKey = null, customVoice = null) {
+    // Free Tier Rate Limit வந்தால் தானாகக் காத்திருந்து மீண்டும் முயலும் (Auto-Retry)
+    async function fetchGeminiAudioBlob(rawText, customKey = null, customVoice = null, retryCount = 0) {
       const key = customKey || geminiApiKey;
       const voice = customVoice || geminiVoiceName;
       const cleaned = formatForSpeech(rawText);
@@ -594,23 +602,25 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: cleaned
-            }]
-          }],
+          contents: [{ parts: [{ text: cleaned }] }],
           generationConfig: {
             responseModalities: ["AUDIO"],
             speechConfig: {
               voiceConfig: {
-                prebuiltVoiceConfig: {
-                  voiceName: voice
-                }
+                prebuiltVoiceConfig: { voiceName: voice }
               }
             }
           }
         })
       });
+
+      if (response.status === 429 && retryCount < 2) {
+        // Free Tier லிமிட் முடிந்தால் 8 விநாடி காத்திருந்து தானாக மீண்டும் முயலும்
+        updateStatusPill('⏳ 8s காத்திருக்கிறது...', true);
+        await new Promise(r => setTimeout(r, 8500));
+        if (!isAutoRunning && !customKey) throw new Error('Stopped');
+        return fetchGeminiAudioBlob(rawText, customKey, customVoice, retryCount + 1);
+      }
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
@@ -640,34 +650,35 @@
     }
 
     async function speakWithGeminiHumanVoice(text, onDone) {
-      if (activeAudio) {
-        activeAudio.pause();
-        activeAudio = null;
-      }
+      globalPlayer.pause();
 
       try {
         const blob = await fetchGeminiAudioBlob(text);
-        const audioUrl = URL.createObjectURL(blob);
-        activeAudio = new Audio(audioUrl);
+        if (!isAutoRunning) return;
 
-        activeAudio.onended = () => {
+        const audioUrl = URL.createObjectURL(blob);
+        globalPlayer.src = audioUrl;
+
+        globalPlayer.onended = () => {
           URL.revokeObjectURL(audioUrl);
           if (onDone) onDone();
         };
-        activeAudio.onerror = () => {
+        globalPlayer.onerror = () => {
           if (onDone) onDone();
         };
 
-        await activeAudio.play();
+        await globalPlayer.play();
       } catch (err) {
-        updateStatusPill(`⚠️ குரல் பிழை: ${err.message}`, true, true);
+        if (!isAutoRunning) return;
+        updateStatusPill('⏳ குரல் தயாராகிறது...', true);
         setTimeout(() => {
           if (onDone) onDone();
-        }, 2000);
+        }, 1500);
       }
     }
 
     async function testGeminiVoice() {
+      unlockSafariAudio();
       const key = document.getElementById('geminiApiKeyInput').value.trim();
       const voice = document.getElementById('geminiVoiceSelect').value;
       const statusEl = document.getElementById('voiceTestStatus');
@@ -684,10 +695,10 @@
       try {
         const blob = await fetchGeminiAudioBlob('வணக்கம்! டி.என்.பி.எஸ்.சி தேர்வுக்குத் தயாராகலாம்.', key, voice);
         const url = URL.createObjectURL(blob);
-        const audio = new Audio(url);
+        globalPlayer.src = url;
         statusEl.style.color = '#059669';
         statusEl.textContent = '✔ குரல் அருமையாக வேலை செய்கிறது!';
-        audio.play();
+        await globalPlayer.play();
       } catch (e) {
         statusEl.style.color = '#dc2626';
         statusEl.textContent = `❌ பிழை: ${e.message}`;
@@ -738,21 +749,20 @@
       } catch (e) {}
     }
 
-    function updateStatusPill(msg, show = true, isError = false) {
+    function updateStatusPill(msg, show = true) {
       const pill = document.getElementById('statusPill');
       if (!show) {
         pill.style.display = 'none';
         return;
       }
       pill.textContent = msg;
-      pill.className = isError ? 'status-pill error' : 'status-pill';
       pill.style.display = 'block';
     }
 
     function renderScreen() {
       clearInterval(timerHandle);
       clearTimeout(nextStepTimeout);
-      if (activeAudio) { activeAudio.pause(); activeAudio = null; }
+      globalPlayer.pause();
 
       countdown = 5;
       localStorage.setItem('quiz_last_index', currentIndex);
@@ -775,6 +785,7 @@
 
     function toggleAutoQuiz() {
       getCtx();
+      unlockSafariAudio();
       if (!geminiApiKey) {
         openVoiceSettings();
         return;
@@ -795,7 +806,7 @@
       isAutoRunning = false;
       clearInterval(timerHandle);
       clearTimeout(nextStepTimeout);
-      if (activeAudio) { activeAudio.pause(); activeAudio = null; }
+      globalPlayer.pause();
 
       const btn = document.getElementById('autoPlayBtn');
       btn.classList.remove('running');
@@ -809,17 +820,9 @@
       renderScreen();
 
       const q = quizData[currentIndex];
-      const isLastQuestion = (currentIndex === quizData.length - 1);
-
       updateStatusPill('🎙️ கேள்வி வாசிக்கிறது...', true);
 
-      // பின்னணியில் விடையின் ஆடியோவையும் முன்கூட்டியே தயார் செய்தல்
-      if (!isLastQuestion) {
-        const correctAnswerText = q.options[q.correct];
-        fetchGeminiAudioBlob(`சரியான விடை, ${correctAnswerText}`).catch(() => {});
-      }
-
-      // 1. கேள்வியை மட்டும் மனிதக் குரலில் வாசித்தல்
+      // 1. கேள்வியை மட்டும் வாசித்தல் (Quota சேமிக்க ஒரே நேரத்தில் ஒரு request மட்டும்)
       speakWithGeminiHumanVoice(q.question, () => {
         if (!isAutoRunning) return;
         // 2. 5 விநாடி டைமர் தொடங்குதல்
@@ -875,7 +878,7 @@
       const correctAnswerText = q.options[correctIdx];
       updateStatusPill('✔ விடை வாசிக்கிறது...', true);
 
-      // 3. விடையை மட்டும் மனிதக் குரலில் வாசித்தல்
+      // 3. விடையை மட்டும் வாசித்தல்
       speakWithGeminiHumanVoice(`சரியான விடை, ${correctAnswerText}`, () => {
         if (!isAutoRunning) return;
         // 4. தானாக அடுத்த கேள்விக்குச் செல்லுதல்
@@ -887,7 +890,7 @@
           } else {
             stopAutoQuiz();
           }
-        }, 1600);
+        }, 1800);
       });
     }
 
