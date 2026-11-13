@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>LOVE TNPSC - Compact Studio Quiz with Voice</title>
+  <title>LOVE TNPSC - Natural Human Voice Studio</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link href="https://fonts.googleapis.com/css2?family=Mukta+Malar:wght@600;700;800&family=Teko:wght@700&display=swap" rel="stylesheet">
@@ -44,9 +44,10 @@
       align-items: center;
       padding-bottom: 5px;
       border-bottom: 1.5px solid #e2e8f0;
-      gap: 8px;
+      gap: 6px;
       flex-shrink: 0;
       z-index: 10;
+      flex-wrap: wrap;
     }
 
     .brand-tag {
@@ -57,21 +58,7 @@
       white-space: nowrap;
     }
 
-    .grid-trigger-btn {
-      background: #f1f5f9;
-      color: #0f172a;
-      border: 1.5px solid #cbd5e1;
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 800;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .nav-btn {
+    .grid-trigger-btn, .nav-btn, .pen-toggle-btn, .btn-edit {
       background: #f1f5f9;
       color: #0f172a;
       border: 1px solid #cbd5e1;
@@ -80,75 +67,49 @@
       font-size: 12px;
       font-weight: 800;
       cursor: pointer;
-      transition: all 0.15s ease;
-    }
-    .nav-btn:active {
-      transform: scale(0.92);
-      background: #e2e8f0;
-    }
-
-    /* பென்சில் பட்டன் */
-    .pen-toggle-btn {
-      background: #f8fafc;
-      color: #0f172a;
-      border: 1.5px solid #cbd5e1;
-      padding: 4px 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 800;
-      cursor: pointer;
       display: flex;
       align-items: center;
       gap: 4px;
-      transition: all 0.2s ease;
     }
+
     .pen-toggle-btn.active {
       background: #ef4444 !important;
       color: #ffffff !important;
       border-color: #dc2626 !important;
-      box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
     }
 
-    .start-btn-top {
-      background: linear-gradient(135deg, #1e3a8a, #0f172a);
+    .auto-btn {
+      background: linear-gradient(135deg, #059669, #047857);
       color: #ffffff;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 800;
       border: none;
       padding: 6px 14px;
       border-radius: 8px;
       cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      box-shadow: 0 2px 6px rgba(5, 150, 105, 0.3);
       white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
-    .start-btn-top:disabled {
-      opacity: 0.6;
-    }
-
-    .btn-edit {
-      background: #f8fafc;
-      color: #334155;
-      border: 1px solid #cbd5e1;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 700;
-      cursor: pointer;
+    .auto-btn.running {
+      background: linear-gradient(135deg, #dc2626, #991b1b);
     }
 
-    /* கேள்வி வரி */
+    /* Question Title */
     .question-title {
       font-size: 21px;
       font-weight: 800;
       color: #0b1a78;
-      line-height: 1.3;
-      margin: 4px 0;
+      line-height: 1.35;
+      margin: 6px 0;
       flex-shrink: 0;
       cursor: pointer;
       z-index: 5;
     }
 
-    /* நடுப்பகுதி */
+    /* Middle Body */
     .body-content {
       display: flex;
       flex: 1;
@@ -160,13 +121,12 @@
       position: relative;
     }
 
-    /* 4 ஆப்ஷன்கள் */
     .options-group {
       display: flex;
       flex-direction: column;
-      gap: 7px;
+      gap: 8px;
       flex: 1;
-      max-width: 52%;
+      max-width: 54%;
       justify-content: center;
       z-index: 5;
     }
@@ -178,10 +138,10 @@
       font-size: 18px;
       font-weight: 800;
       color: #000000;
-      padding: 5px 12px;
+      padding: 6px 12px;
       border-radius: 6px;
       background: #ffffff;
-      transition: all 0.2s ease;
+      transition: all 0.25s ease;
     }
 
     .opt-char {
@@ -219,20 +179,34 @@
       100% { transform: scale(1); }
     }
 
-    /* வலதுபுற காலி இடம் */
     .free-writing-space {
       flex: 1;
       height: 100%;
       position: relative;
     }
 
-    /* தங்க நிற வட்ட டைமர் */
+    .status-pill {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: #eff6ff;
+      color: #1e40af;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid #bfdbfe;
+      display: none;
+      max-width: 190px;
+      text-align: center;
+    }
+
     .gold-timer {
       position: absolute;
-      bottom: -4px;
-      right: -4px;
-      width: 50px;
-      height: 50px;
+      bottom: 2px;
+      right: 2px;
+      width: 52px;
+      height: 52px;
       border-radius: 50%;
       background: radial-gradient(circle at 35% 35%, #fef08a, #ca8a04 60%, #713f12 100%);
       display: flex;
@@ -252,7 +226,7 @@
       text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
 
-    /* முழுத்திரை வரைபலகை (Drawing Layer) */
+    /* Drawing Layer */
     #drawingCanvas {
       position: absolute;
       top: 0;
@@ -268,7 +242,7 @@
       cursor: crosshair;
     }
 
-    /* பென்சில் டூல்பார் */
+    /* Pen Toolbar */
     .pen-palette {
       display: none;
       position: absolute;
@@ -278,17 +252,10 @@
       background: #0f172a;
       padding: 5px 14px;
       border-radius: 30px;
-      display: flex;
       align-items: center;
       gap: 10px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.25);
       z-index: 25;
-      animation: slideUp 0.2s ease-out;
-    }
-
-    @keyframes slideUp {
-      0% { transform: translate(-50%, 15px); opacity: 0; }
-      100% { transform: translate(-50%, 0); opacity: 1; }
     }
 
     .color-dot {
@@ -297,7 +264,6 @@
       border-radius: 50%;
       cursor: pointer;
       border: 2px solid #ffffff;
-      transition: transform 0.15s ease;
     }
     .color-dot.selected {
       transform: scale(1.25);
@@ -315,7 +281,7 @@
       cursor: pointer;
     }
 
-    /* கடைசி கேள்வி கமெண்ட் பேனர் */
+    /* Comment Banner */
     .comment-banner {
       display: none;
       position: absolute;
@@ -328,7 +294,6 @@
       flex-direction: column;
       gap: 12px;
       z-index: 20;
-      animation: popComment 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
       padding: 16px;
       text-align: center;
     }
@@ -345,8 +310,8 @@
       color: #ffffff;
     }
 
-    /* வினா எண் கட்டங்கள் விண்டோ */
-    .grid-modal {
+    /* Modals */
+    .grid-modal, .modal-wrap {
       display: none;
       position: fixed;
       inset: 0;
@@ -357,17 +322,16 @@
       z-index: 100;
       padding: 12px;
     }
-    .grid-content {
+    .grid-content, .modal-card {
       background: #ffffff;
       border-radius: 14px;
       padding: 16px;
       width: 100%;
-      max-width: 600px;
+      max-width: 550px;
       max-height: 85vh;
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      gap: 10px;
     }
     .tiles-wrapper {
       display: grid;
@@ -386,33 +350,11 @@
       font-size: 14px;
       font-weight: 800;
       cursor: pointer;
-      text-align: center;
     }
     .tile-btn.current {
       background: #1e3a8a;
       color: #ffffff;
       border-color: #1e3a8a;
-    }
-
-    /* அப்லோட் மாடல் */
-    .modal-wrap {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-    }
-    .modal-card {
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 16px;
-      width: 90%;
-      max-width: 500px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
     }
     .modal-card textarea {
       width: 100%;
@@ -427,6 +369,9 @@
 </head>
 <body>
 
+  <!-- நிரந்தர இயற்கை மனிதக் குரல் ஆடியோ பிளேயர் -->
+  <audio id="naturalAudio" playsinline></audio>
+
   <div class="main-wrapper">
 
     <!-- Header Bar -->
@@ -435,36 +380,34 @@
         <span class="brand-tag">LOVE TNPSC</span>
         <button id="gridBtn" class="grid-trigger-btn" onclick="openGridModal()">
           <span>🔢 வினா</span>
-          <span id="qBadgeNum" class="text-indigo-900 font-black">01/50</span>
+          <span id="qBadgeNum">01/50</span>
           <span>▼</span>
         </button>
       </div>
 
       <div style="display: flex; align-items: center; gap: 5px;">
-        <button class="nav-btn" onclick="prevQuestion()" title="முந்தைய கேள்வி">◀ பின்</button>
-        <button class="nav-btn" onclick="nextQuestion()" title="அடுத்த கேள்வி">முன் ▶</button>
-        
-        <!-- பென்சில் பட்டன் -->
+        <button class="nav-btn" onclick="manualPrev()">◀ பின்</button>
+        <button class="nav-btn" onclick="manualNext()">முன் ▶</button>
+
         <button id="penToggleBtn" class="pen-toggle-btn" onclick="togglePenMode()">
           <span>✏️</span>
           <span id="penBtnText">எழுது</span>
         </button>
       </div>
       
-      <button id="startBtn" class="start-btn-top" onclick="startTimer()">
-        ⏱️ தொடங்கு (5s)
+      <button id="autoPlayBtn" class="auto-btn" onclick="toggleAutoQuiz()">
+        <span id="autoIcon">▶️</span>
+        <span id="autoText">Auto Play</span>
       </button>
 
       <button class="btn-edit" onclick="openEditor()">➕ கேள்விகள்</button>
     </div>
 
     <!-- Question Line -->
-    <h1 id="qText" class="question-title" onclick="openGridModal()" title="வினா எண் மாற்ற கிளிக் செய்யவும்"></h1>
+    <h1 id="qText" class="question-title" onclick="openGridModal()"></h1>
 
-    <!-- Body: Left Options + Right Blank Writing Area -->
+    <!-- Body -->
     <div class="body-content">
-      
-      <!-- Left Options -->
       <div class="options-group">
         <div id="optRow0" class="opt-box">
           <span class="opt-char">a)</span>
@@ -488,32 +431,29 @@
         </div>
       </div>
 
-      <!-- Right Blank Writing Area -->
       <div class="free-writing-space">
+        <div id="statusPill" class="status-pill">கேள்வி வாசிக்கிறது...</div>
         <div class="gold-timer">
           <span id="timerVal" class="timer-num">5</span>
         </div>
       </div>
 
-      <!-- Comment Banner for Last Question -->
       <div id="commentBanner" class="comment-banner">
         <div style="font-size: 38px;">💬</div>
         <div class="comment-text-main">இதற்கான சரியான விடை என்ன?</div>
         <div class="comment-text-sub">உங்க பதிலை உடனே கீழே Comment பண்ணுங்க! 👇</div>
       </div>
-
     </div>
 
-    <!-- Full Screen Touch Drawing Canvas -->
+    <!-- Drawing Canvas -->
     <canvas id="drawingCanvas"></canvas>
 
-    <!-- Floating Pen Toolbar -->
+    <!-- Pen Toolbar -->
     <div id="penPalette" class="pen-palette" style="display: none;">
-      <div class="color-dot selected" style="background: #ef4444;" onclick="setPenColor('#ef4444', this)" title="சிவப்பு"></div>
-      <div class="color-dot" style="background: #eab308;" onclick="setPenColor('#eab308', this)" title="மஞ்சள்"></div>
-      <div class="color-dot" style="background: #10b981;" onclick="setPenColor('#10b981', this)" title="பச்சை"></div>
-      <div class="color-dot" style="background: #2563eb;" onclick="setPenColor('#2563eb', this)" title="நீலம்"></div>
-      
+      <div class="color-dot selected" style="background: #ef4444;" onclick="setPenColor('#ef4444', this)"></div>
+      <div class="color-dot" style="background: #eab308;" onclick="setPenColor('#eab308', this)"></div>
+      <div class="color-dot" style="background: #10b981;" onclick="setPenColor('#10b981', this)"></div>
+      <div class="color-dot" style="background: #2563eb;" onclick="setPenColor('#2563eb', this)"></div>
       <button class="pen-action-btn" onclick="clearCanvas()">🗑️ அழி</button>
       <button class="pen-action-btn" style="background: #ef4444;" onclick="togglePenMode()">✕ மூடு</button>
     </div>
@@ -545,42 +485,73 @@
 
   <script>
     let defaultQuizData = [
-      {"question": "Q) 'ஆடு' - எவ்வகை தொழிற்பெயர்?", "options": ["விகுதி பெற்ற தொழிற்பெயர்", "முதநிலை தொழிற்பெயர்", "முதநிலை திரிந்த தொழிற்பெயர்", "எதிர்மறை தொழிற்பெயர்"], "correct": 1},
-      {"question": "Q) 'கேடு' - எவ்வகை தொழிற்பெயர்?", "options": ["முதநிலை திரிந்த தொழிற்பெயர்", "முதநிலை தொழிற்பெயர்", "விகுதி பெற்ற தொழிற்பெயர்", "தொழிலாகுபெயர்"], "correct": 0},
-      {"question": "Q) 'அஃறிணை' - பிரித்தெழுதுக:", "options": ["அல் + திணை", "அஃது + திணை", "அல் + இணை", "அஃகு + திணை"], "correct": 0},
-      {"question": "Q) 'பொருந்தாச் சொல் தேர்க' (சாரியையற்ற சொல்):", "options": ["மரத்தை", "புளியங்காய்", "வண்டொடு", "பாடினான்"], "correct": 3},
-      {"question": "Q) 'வஞ்சியடி' என்பது எத்தனை சீர்களைப் பெற்று வரும்?", "options": ["இரு சீர்", "முச்சீர்", "நாற்சீர்", "ஐஞ்சீர்"], "correct": 0}
+      {"question": "Q) 'அரை' - 'அறை' என்ற சொற்களின் சரியான பொருள் வேறுபாட்டைத் தேர்க:", "options": ["சமையலறை - ஆடை", "பாதி - அறைதல் / அறை", "ஒலித்தல் - பாதி", "உடை - சுத்தியல்"], "correct": 1},
+      {"question": "Q) 'இரை' - 'இறை' என்ற மயங்கொலிச் சொற்களின் முறையான பொருள் யாது?", "options": ["உணவு - கடவுள் / அரசன்", "சத்தம் - இறைத்தல்", "அரசன் - உணவு", "விதைத்தல் - இரைச்சல்"], "correct": 0},
+      {"question": "Q) 'கூரை' - 'கூறை' பொருள் வேறுபாட்டைக் கண்டறிக:", "options": ["புடவை - வீட்டின் உச்சி", "வெட்டுதல் - உடை", "வீட்டின் கூரை - புடவை", "கூர்மையானது - ஆடை"], "correct": 2}
     ];
 
     let quizData = JSON.parse(localStorage.getItem('quizData_saved')) || defaultQuizData;
     let currentIndex = parseInt(localStorage.getItem('quiz_last_index')) || 0;
     if (currentIndex >= quizData.length) currentIndex = 0;
 
-    let timerRunning = false;
+    let isAutoRunning = false;
     let countdown = 5;
     let timerHandle = null;
+    let nextStepTimeout = null;
 
+    const naturalAudio = document.getElementById('naturalAudio');
+
+    function formatForSpeech(rawText) {
+      return rawText
+        .replace(/^Q\)\s*/i, '')
+        .replace(/['‘’"“”]/g, '')
+        .replace(/\s*-\s*/g, ', ')
+        .replace(/\s*\/\s*/g, ' அல்லது ')
+        .replace(/_{2,}/g, ' என்ன ')
+        .trim();
+    }
+
+    function stopNaturalVoice() {
+      naturalAudio.pause();
+      naturalAudio.onended = null;
+      naturalAudio.onerror = null;
+    }
+
+    // 100% இயல்பான மனிதக் குரல் (Natural Neural Audio Stream)
+    function playNaturalHumanVoice(text, onComplete) {
+      stopNaturalVoice();
+      const cleaned = formatForSpeech(text);
+      const encoded = encodeURIComponent(cleaned);
+      
+      // உயர்தர தமிழ் மனிதக் குரல் ஸ்ட்ரீம்
+      const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=ta&q=${encoded}`;
+
+      naturalAudio.src = audioUrl;
+      naturalAudio.playbackRate = 0.95;
+
+      naturalAudio.onended = () => {
+        if (onComplete) onComplete();
+      };
+
+      naturalAudio.onerror = () => {
+        // ஒருவேளை நெட்வொர்க் தடைபட்டால் சிறு தாமதத்துடன் அடுத்த கட்டத்திற்குச் செல்லுதல்
+        setTimeout(() => { if (onComplete) onComplete(); }, 1200);
+      };
+
+      const playPromise = naturalAudio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          setTimeout(() => { if (onComplete) onComplete(); }, 1200);
+        });
+      }
+    }
+
+    /* Sound Effects */
     let audioCtx = null;
     function getCtx() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === 'suspended') audioCtx.resume();
       return audioCtx;
-    }
-
-    // Text-to-Speech (Voice Engine)
-    let synth = window.speechSynthesis;
-    function speakText(text, callback) {
-      if (!synth) {
-        if (callback) callback();
-        return;
-      }
-      synth.cancel();
-      let utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'ta-IN'; // தமிழ் குரல்
-      utterance.rate = 1.0;
-      utterance.onend = () => { if (callback) callback(); };
-      utterance.onerror = () => { if (callback) callback(); };
-      synth.speak(utterance);
     }
 
     function playTick() {
@@ -619,12 +590,22 @@
       } catch (e) {}
     }
 
+    function updateStatusPill(msg, show = true) {
+      const pill = document.getElementById('statusPill');
+      if (!show) {
+        pill.style.display = 'none';
+        return;
+      }
+      pill.textContent = msg;
+      pill.style.display = 'block';
+    }
+
     function renderScreen() {
       clearInterval(timerHandle);
-      timerRunning = false;
-      countdown = 5;
-      if (synth) synth.cancel();
+      clearTimeout(nextStepTimeout);
+      stopNaturalVoice();
 
+      countdown = 5;
       localStorage.setItem('quiz_last_index', currentIndex);
 
       const q = quizData[currentIndex];
@@ -632,10 +613,7 @@
       document.getElementById('qText').textContent = q.question;
       document.getElementById('timerVal').textContent = '5';
       document.getElementById('commentBanner').style.display = 'none';
-
-      const btn = document.getElementById('startBtn');
-      btn.disabled = false;
-      btn.textContent = '⏱️ தொடங்கு (5s)';
+      updateStatusPill('', false);
 
       for (let i = 0; i < 4; i++) {
         document.getElementById(`optText${i}`).textContent = q.options[i];
@@ -646,39 +624,60 @@
       clearCanvas();
     }
 
-    function nextQuestion() {
-      if (currentIndex < quizData.length - 1) {
-        currentIndex++;
-        renderScreen();
-      }
-    }
-
-    function prevQuestion() {
-      if (currentIndex > 0) {
-        currentIndex--;
-        renderScreen();
-      }
-    }
-
-    function startTimer() {
+    function toggleAutoQuiz() {
       getCtx();
-      if (timerRunning) return;
-      timerRunning = true;
-      countdown = 5;
+      if (isAutoRunning) {
+        stopAutoQuiz();
+      } else {
+        isAutoRunning = true;
+        const btn = document.getElementById('autoPlayBtn');
+        btn.classList.add('running');
+        document.getElementById('autoIcon').textContent = '⏹️';
+        document.getElementById('autoText').textContent = 'Stop';
+        runCurrentQuestionCycle();
+      }
+    }
 
-      const btn = document.getElementById('startBtn');
-      btn.disabled = true;
-      btn.textContent = 'ஓடுகிறது...';
+    function stopAutoQuiz() {
+      isAutoRunning = false;
+      clearInterval(timerHandle);
+      clearTimeout(nextStepTimeout);
+      stopNaturalVoice();
 
-      // கேள்வியை வாய்ஸில் படித்தல்
+      const btn = document.getElementById('autoPlayBtn');
+      btn.classList.remove('running');
+      document.getElementById('autoIcon').textContent = '▶️';
+      document.getElementById('autoText').textContent = 'Auto Play';
+      updateStatusPill('', false);
+    }
+
+    function runCurrentQuestionCycle() {
+      if (!isAutoRunning) return;
+      renderScreen();
+
       const q = quizData[currentIndex];
-      let fullText = `${q.question}. ஆப்ஷன்கள்: ஏ. ${q.options[0]}, பி. ${q.options[1]}, சி. ${q.options[2]}, டி. ${q.options[3]}`;
-      speakText(fullText);
+      updateStatusPill('🎙️ கேள்வி வாசிக்கிறது...', true);
 
+      // 1. கேள்வியை மட்டும் இயல்பான மனிதக் குரலில் வாசித்தல்
+      playNaturalHumanVoice(q.question, () => {
+        if (!isAutoRunning) return;
+        // 2. 5 விநாடி டைமர் தொடங்குதல்
+        startAutomatic5SecTimer();
+      });
+    }
+
+    function startAutomatic5SecTimer() {
+      if (!isAutoRunning) return;
+      countdown = 5;
+      updateStatusPill('⏱️ 5 விநாடி நேரம்...', true);
       playTick();
       document.getElementById('timerVal').textContent = countdown;
 
       timerHandle = setInterval(() => {
+        if (!isAutoRunning) {
+          clearInterval(timerHandle);
+          return;
+        }
         countdown--;
         if (countdown > 0) {
           playTick();
@@ -686,32 +685,65 @@
         } else {
           clearInterval(timerHandle);
           document.getElementById('timerVal').textContent = '0';
-          revealAnswer();
+          revealAndSpeakAnswer();
         }
       }, 1000);
     }
 
-    function revealAnswer() {
+    function revealAndSpeakAnswer() {
+      if (!isAutoRunning) return;
       playDing();
+
       const q = quizData[currentIndex];
       const isLastQuestion = (currentIndex === quizData.length - 1);
+
+      if (isLastQuestion) {
+        document.getElementById('commentBanner').style.display = 'flex';
+        updateStatusPill('💬 கமெண்ட் பண்ணுங்க!', true);
+        playNaturalHumanVoice('இதற்கான சரியான விடை என்ன? உங்கள் பதிலை கீழே கமெண்ட் பண்ணுங்க!', () => {
+          stopAutoQuiz();
+        });
+        return;
+      }
 
       const correctIdx = q.correct;
       const row = document.getElementById(`optRow${correctIdx}`);
       row.classList.add('is-correct');
       document.getElementById(`tick${correctIdx}`).innerHTML = '<span class="tick-badge">✔</span>';
 
-      // சரியான விடையை வாய்ஸில் சொல்லுதல்
-      let answerText = `சரியான விடை: ${q.options[correctIdx]}`;
-      speakText(answerText);
+      const correctAnswerText = q.options[correctIdx];
+      updateStatusPill('✔ விடை வாசிக்கிறது...', true);
 
-      if (isLastQuestion) {
-        document.getElementById('commentBanner').style.display = 'flex';
-        document.getElementById('startBtn').textContent = 'கமெண்ட் பண்ணுங்க!';
-        return;
+      // 3. விடையை மட்டும் இயல்பான மனிதக் குரலில் வாசித்தல்
+      playNaturalHumanVoice(`சரியான விடை, ${correctAnswerText}`, () => {
+        if (!isAutoRunning) return;
+        // 4. தானாக அடுத்த கேள்விக்குச் செல்லுதல்
+        nextStepTimeout = setTimeout(() => {
+          if (!isAutoRunning) return;
+          if (currentIndex < quizData.length - 1) {
+            currentIndex++;
+            runCurrentQuestionCycle();
+          } else {
+            stopAutoQuiz();
+          }
+        }, 1600);
+      });
+    }
+
+    function manualNext() {
+      if (currentIndex < quizData.length - 1) {
+        currentIndex++;
+        if (isAutoRunning) runCurrentQuestionCycle();
+        else renderScreen();
       }
+    }
 
-      document.getElementById('startBtn').textContent = 'சரியான விடை!';
+    function manualPrev() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        if (isAutoRunning) runCurrentQuestionCycle();
+        else renderScreen();
+      }
     }
 
     /* Pen Engine */
@@ -793,7 +825,6 @@
     canvas.addEventListener('mousedown', startDraw);
     canvas.addEventListener('mousemove', draw);
     canvas.addEventListener('mouseup', stopDraw);
-
     canvas.addEventListener('touchstart', startDraw, { passive: false });
     canvas.addEventListener('touchmove', draw, { passive: false });
     canvas.addEventListener('touchend', stopDraw);
@@ -808,8 +839,9 @@
         btn.textContent = idx + 1;
         btn.onclick = () => {
           currentIndex = idx;
-          renderScreen();
           closeGridModal();
+          if (isAutoRunning) runCurrentQuestionCycle();
+          else renderScreen();
         };
         container.appendChild(btn);
       });
@@ -823,6 +855,7 @@
     }
 
     function openEditor() {
+      stopAutoQuiz();
       document.getElementById('jsonBox').value = JSON.stringify(quizData, null, 2);
       document.getElementById('editorModal').style.display = 'flex';
     }
