@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>LOVE TNPSC - Studio Quiz Pro</title>
+  <title>LOVE TNPSC - Studio Pro Quiz</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link href="https://fonts.googleapis.com/css2?family=Mukta+Malar:wght@600;700;800&family=Teko:wght@700&display=swap" rel="stylesheet">
@@ -369,9 +369,6 @@
 </head>
 <body>
 
-  <!-- நிரந்தர மனிதக் குரல் ஆடியோ பிளேயர் -->
-  <audio id="stableAudio" playsinline></audio>
-
   <div class="main-wrapper">
 
     <!-- Header Bar -->
@@ -498,11 +495,12 @@
     let countdown = 5;
     let timerHandle = null;
     let nextStepTimeout = null;
+    let speechGuard = null;
 
-    const stableAudio = document.getElementById('stableAudio');
+    window._activeUtterances = [];
 
-    function formatForVoice(rawText) {
-      return rawText
+    function cleanText(raw) {
+      return raw
         .replace(/^Q\)\s*/i, '')
         .replace(/['‘’"“”]/g, '')
         .replace(/\s*-\s*/g, ', ')
@@ -511,44 +509,66 @@
         .trim();
     }
 
-    function stopStableAudio() {
-      stableAudio.pause();
-      stableAudio.onended = null;
-      stableAudio.onerror = null;
+    function stopAllVoice() {
+      clearTimeout(speechGuard);
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      window._activeUtterances = [];
     }
 
-    // ஆடியோ முழுமையாக பேசி முடித்த பிறகே அடுத்த கட்டத்திற்குச் செல்லும் நம்பகமான இன்ஜின்
-    function playStableVoice(text, onComplete) {
-      stopStableAudio();
-      const cleaned = formatForVoice(text);
-      const encoded = encodeURIComponent(cleaned);
-      
-      const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=ta&q=${encoded}`;
-
-      stableAudio.src = audioUrl;
-      stableAudio.playbackRate = 0.92; // மிகத் தெளிவான நிதானமான மனிதப் பேச்சு வேகம்
-
-      let completed = false;
-      function done() {
-        if (completed) return;
-        completed = true;
-        if (onComplete) onComplete();
+    // iPhone-ல் 100% உறுதியாகச் சவுண்ட் கேட்கும் Native Speech Engine
+    function speakNativeVoice(text, onDone) {
+      stopAllVoice();
+      if (!('speechSynthesis' in window)) {
+        if (onDone) onDone();
+        return;
       }
 
-      stableAudio.onended = () => {
-        setTimeout(done, 300);
-      };
+      const cleaned = cleanText(text);
+      const utter = new SpeechSynthesisUtterance(cleaned);
+      window._activeUtterances.push(utter);
 
-      stableAudio.onerror = () => {
-        setTimeout(done, 1000);
-      };
+      utter.lang = 'ta-IN';
+      utter.rate = 0.90;   // இயல்பான தெளிவான வேகம்
+      utter.pitch = 1.0;   // இயல்பான குரல் சுருதி
 
-      const playPromise = stableAudio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          setTimeout(done, 1000);
-        });
+      const voices = window.speechSynthesis.getVoices();
+      const taVoice = voices.find(v => v.lang && v.lang.toLowerCase().includes('ta') && /enhanced|premium|vani|lekha|valluvar|natural|google/i.test(v.name)) ||
+                      voices.find(v => v.lang && v.lang.toLowerCase().includes('ta')) ||
+                      voices[0];
+      if (taVoice) utter.voice = taVoice;
+
+      let called = false;
+      function finish() {
+        if (called) return;
+        called = true;
+        clearTimeout(speechGuard);
+        window._activeUtterances = window._activeUtterances.filter(u => u !== utter);
+        if (onDone) onDone();
       }
+
+      utter.onend = () => { setTimeout(finish, 250); };
+      utter.onerror = () => { finish(); };
+
+      // Safari Pause Fix Interval
+      const resumer = setInterval(() => {
+        if (called) {
+          clearInterval(resumer);
+          return;
+        }
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
+      }, 300);
+
+      const maxWait = Math.max(3000, cleaned.length * 150);
+      speechGuard = setTimeout(() => {
+        clearInterval(resumer);
+        finish();
+      }, maxWait);
+
+      window.speechSynthesis.speak(utter);
     }
 
     /* Sound Effects */
@@ -608,7 +628,7 @@
     function renderScreen() {
       clearInterval(timerHandle);
       clearTimeout(nextStepTimeout);
-      stopStableAudio();
+      stopAllVoice();
 
       countdown = 5;
       localStorage.setItem('quiz_last_index', currentIndex);
@@ -631,6 +651,12 @@
 
     function toggleAutoQuiz() {
       getCtx();
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        // iOS Safari Audio Unlock Dummy
+        window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+      }
+
       if (isAutoRunning) {
         stopAutoQuiz();
       } else {
@@ -647,7 +673,7 @@
       isAutoRunning = false;
       clearInterval(timerHandle);
       clearTimeout(nextStepTimeout);
-      stopStableAudio();
+      stopAllVoice();
 
       const btn = document.getElementById('autoPlayBtn');
       btn.classList.remove('running');
@@ -663,8 +689,8 @@
       const q = quizData[currentIndex];
       updateStatusPill('🎙️ கேள்வி வாசிக்கிறது...', true);
 
-      // 1. கேள்வி முழுமையாக பேசி முடித்த பிறகே டைமர் தொடங்கும்
-      playStableVoice(q.question, () => {
+      // 1. கேள்வி முழுமையாகப் பேசி முடித்த பிறகே டைமர் தொடங்கும்
+      speakNativeVoice(q.question, () => {
         if (!isAutoRunning) return;
         startAutomatic5SecTimer();
       });
@@ -704,7 +730,7 @@
       if (isLastQuestion) {
         document.getElementById('commentBanner').style.display = 'flex';
         updateStatusPill('💬 கமெண்ட் பண்ணுங்க!', true);
-        playStableVoice('இதற்கான சரியான விடை என்ன? உங்கள் பதிலை கீழே கமெண்ட் பண்ணுங்க!', () => {
+        speakNativeVoice('இதற்கான சரியான விடை என்ன? உங்கள் பதிலை கீழே கமெண்ட் பண்ணுங்க!', () => {
           stopAutoQuiz();
         });
         return;
@@ -718,8 +744,8 @@
       const correctAnswerText = q.options[correctIdx];
       updateStatusPill('✔ விடை வாசிக்கிறது...', true);
 
-      // 3. விடை முழுமையாக பேசி முடித்த பிறகே அடுத்த கேள்விக்குச் செல்லும்
-      playStableVoice(`சரியான விடை, ${correctAnswerText}`, () => {
+      // 3. விடை முழுமையாகப் பேசி முடித்த பிறகே அடுத்த கேள்விக்குச் செல்லும்
+      speakNativeVoice(`சரியான விடை, ${correctAnswerText}`, () => {
         if (!isAutoRunning) return;
         nextStepTimeout = setTimeout(() => {
           if (!isAutoRunning) return;
@@ -729,7 +755,7 @@
           } else {
             stopAutoQuiz();
           }
-        }, 1200);
+        }, 1500);
       });
     }
 
@@ -883,6 +909,9 @@
     window.onload = () => {
       resizeCanvas();
       renderScreen();
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.getVoices();
+      }
       document.body.addEventListener('touchstart', getCtx, { once: true });
       document.body.addEventListener('click', getCtx, { once: true });
     };
